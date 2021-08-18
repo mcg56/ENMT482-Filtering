@@ -1,17 +1,31 @@
 \documentclass[a4paper, 12]{article}
 \usepackage{url}
+\usepackage{pgf}
 
-\input a4size
-\input maths
-\input mpgf
-\input ref
+\setlength{\oddsidemargin}{0mm}
+\setlength{\evensidemargin}{-14mm}
+\setlength{\marginparwidth}{0cm}
+\setlength{\marginparsep}{0cm}
+\setlength{\topmargin}{2mm}
+\setlength{\headheight}{0mm}
+\setlength{\headsep}{0cm}
+\setlength{\textheight}{240mm}
+\setlength{\textwidth}{168mm}
+\setlength{\topskip}{0mm}
+\setlength{\footskip}{10mm}
 
+% This is needed to handle unicode minus signs output by matplotlib pgf.
+\usepackage[utf8]{inputenc}
+\DeclareUnicodeCharacter{2212}{-}
+
+\newcommand{\est}[1]{\expandafter\hat#1}
 \newcommand{\code}[1]{\texttt{#1}}
-\renewcommand{\var}[1]{\sigma_{#1}^2}
+\newcommand{\var}[1]{\sigma_{#1}^2}
 \newcommand{\std}[1]{\sigma_{#1}}
+\newcommand{\reffig}[1]{\mbox{Figure~\ref{fig:#1}}}
 
 
-\title{ENMT482 Assignment 1 Tips}
+\title{ENMT482 Assignment 1 Guide}
 \author{M.P. Hayes}
 \date{}
 
