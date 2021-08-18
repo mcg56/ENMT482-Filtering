@@ -1,0 +1,262 @@
+\documentclass[a4paper, 12]{article}
+\usepackage{url}
+
+\input a4size
+\input maths
+\input mpgf
+\input ref
+
+\newcommand{\code}[1]{\texttt{#1}}
+\renewcommand{\var}[1]{\sigma_{#1}^2}
+\newcommand{\std}[1]{\sigma_{#1}}
+
+
+\title{ENMT482 Assignment 1 Tips}
+\author{M.P. Hayes}
+\date{}
+
+\begin{document}
+\maketitle
+
+
+\section{Part A}
+
+This part of the assignment is about localising the position of a
+robot in 1-D using a number of sensors.  The goal is to create sensor
+models, a motion model, and to use a Bayes filter to improve the
+estimate.  The better the model, the better the estimation.
+
+
+\subsection{Sensor models}
+
+In general, for each sensor, you want a model of the form:
+%
+\begin{equation}
+  Z = h(x) + V(x).
+\end{equation}
+
+  
+\begin{enumerate}
+\item Download the data files and example scripts from Learn.
+  
+\item Plot the sensor data using the file \url{calibration.csv} (see
+  Python script \url{plot-calibration.py}). 
+
+\item Choose the sensors you wish to fuse (ignore the hard one to
+  start with).
+
+ 
+\item Fit a parametric model to the data for each sensor using
+  parametric identification given measured pairs of data $(x_n, z_n)$,
+  see \reffig{fit}.  Let's say your model is:
+  %
+  \begin{equation}
+    h(x) = a + b x + c x^2.
+  \end{equation}
+  %
+  The goal is to find the parameters $a$, $b$, and $c$ that minimise
+  the errors:
+  %
+    \begin{equation}
+    v_n = z_n - h(x_n).
+  \end{equation}
+
+  If you are good at programming, there are many tools you can use for
+  this.  The tricky aspect is dealing with outliers.  If you are not
+  good at programming, tweak your model parameters using
+  trial-and-error until you get a good fit.
+
+  \begin{figure}[!h]
+  \centering
+  \input{figs/IRsensor-scatter.pgf}
+  \caption{Non-linear sensor calibration data.}
+  \label{fig:fit}    
+  \end{figure}
+
+  
+  \item If you have a good model, the mean error is zero and the
+    variance is minimized.  I suggest plotting the error, $v_n$, as a
+    function of $x_n$ to see how good your model is.  For example, see
+    \reffig{errors}.
+
+    \begin{figure}[!h]
+  \centering
+  \input{figs/IRsensor-error.pgf}
+  \caption{Error between measured data and model for non-linear sensor
+    calibration data.}
+  \label{fig:errors}  
+  \end{figure}
+
+
+    
+\item If you have outliers, you should remove them from your dataset.
+  The simple approach is to ignore values with large errors.  You may
+  have to do this iteratively.
+
+\item Determine how good each sensor is, i.e., what is its variance,
+  see \reffig{histogram}.  The tricky aspect is that some sensors have
+  a variance that varies with $x$.  If this is the case, you need to
+  create a model for this, i.e., you need $\std{V(x)}$.  Note, if the
+  variance changes slowly with $x$, a simple look-up table would
+  suffice.
+
+  \begin{figure}[!h]
+  \centering
+  \input{figs/IRsensor-error-histogram.pgf}
+  \caption{Histogram of errors between measured data and model for
+    non-linear sensor calibration data in the range $0 \le x \le 1$.}
+  \label{fig:histogram}
+  \end{figure}
+  
+\end{enumerate}
+
+  
+\subsection{Motion model}
+
+Here you need a model of the form:
+%  
+\begin{equation}
+  X_n = X_{n-1} + g(X_{n-1}, u_{n-1}) + W_n,
+\end{equation}
+%
+where $u_{n-1}$ is the commanded speed.
+
+\begin{enumerate}
+\item Plot the commanded speed and the estimated speed (using the
+  distance data) in the training files, \url{training1.csv} and
+  \url{training2.csv}, and ponder what is going on.
+
+\item Determine a motion model, $g(x_{n-1}, u_{n-1})$.  A crude model
+  is simply
+  %
+  \begin{equation}
+    g(x_{n-1}, u_{n-1}) = u_{n-1} \Delta t,
+  \end{equation}
+  %
+  where $u_{n-1}$ is the current commanded speed.
+  
+  A good model will have a zero mean error and minimise the variance
+  of the errors.  The process noise errors are given by
+  %
+  \begin{equation}
+    w_n = x_n - x_{n-1} - g(x_{n-1}, u_{n-1}).
+  \end{equation}
+
+\item Determine the process noise variance, $\var{W}$, for your motion model.
+  
+\end{enumerate}
+
+
+\subsection{Sensor fusion}
+
+
+Here you need a Bayes filter; an extended Kalman filter is easiest to
+start with.  However, you will need to linearise your non-linear
+sensors around the current best estimate of the robot's position.
+
+\begin{enumerate}
+\item Predict the robot's position using the previous estimated
+  position and your motion model.
+
+\item Determine the variance of the predicted robot's position.  
+  
+\item For each sensor, invert its model $h(x)$ so that given a
+  measurement $z$ you can have an estimate, $\est{x}$, for $x$.
+  However, some non-linear models are not easily invertible and so you
+  may need to use interpolation to find $\est{x}$ given $z$.
+
+\item For each sensor, determine its noise variance $\var{V}(x)$ at
+  the current best estimate for $x$.
+
+\item For each sensor, convert the noise variance $\var{V}(x)$ into
+  $\var{\est{X}}(x)$, where $\est{X}$ is the estimator for $X$.  This
+  requires linearisation if your sensor model is non-linear (see the
+  sensor fusion supplement in the lecture notes).
+
+  \begin{figure}[!h]
+  \centering
+  \input{figs/IRsensor-linearised.pgf}
+  \caption{Non-linear sensor model linearised around $x=5$.}
+  \label{fig:linearised}
+  \end{figure}
+  
+\item Combine the estimates from each sensor using a BLUE (see lecture
+  notes).  To check that you have the correct weights, plot the
+  weights for each sensor at each time-step.
+
+\item Combine the prediction from the motion model with the estimates
+  from the sensors using a BLUE.  This can be done at the same time as
+  the previous step.
+
+\item Determine the variance of the BLUE estimator (see lecture
+  notes).
+
+\item Rinse and repeat.
+\end{enumerate}
+
+
+\section{Part B}
+
+This part of the assignment is about localising the position of a
+robot in 2-D using fiducial markers (beacons) and a particle filter.
+These markers are sensed by a camera on a Turtlebot2 robot to estimate
+the local pose of the marker with respect to the robot.
+
+
+The particle filter algorithm is written for you but you need to write
+motion and sensor models.  If you are feeling clever, you might try
+adapting the number of particles and/or not using knowledge of the
+starting position.
+
+
+\subsection{Motion model}
+
+You can use either the velocity or odometry motion models.  The latter
+has the advantage of decoupling the errors, see lecture notes.
+
+To test your motion model, disable the sensor model (so that the
+particle weights do not change) and see if the particles move by the
+correct amount in the correct direction.
+
+Once the particles are moving correctly, add some random behaviour to
+the motion of each particle to mimic process noise.  The amount of
+randomness depends on how good your motion model is.  However, it is
+difficult to evaluate the process noise and I suggest that you tweak
+this by trial and error.
+
+
+\subsection{Sensor model}
+
+
+To correctly implement the sensor model you will need to understand:
+%
+\begin{enumerate}
+\item The difference between the robot and global (map) reference frames.
+
+\item How to calculate the range and bearing of the beacons with
+  respect to the robot given the estimated pose of the beacons.
+
+\item How to calculate the range and bearing of the beacons with
+  respect to each particle.
+
+\item How to use the \code{arctan2} function.
+
+\item How to determine the smallest angle between two vectors.  
+\end{enumerate}
+%
+All these aspects are covered in the lecture notes.
+
+Unfortunately, there is no calibration data for the fiducial marker
+sensor.  I suggest modelling the sensor noise (in both range and
+bearing) as Gaussian random noise and choosing the standard deviation
+by trial and error.  Note, the standard deviation will vary with the
+observed pose of the marker (it will be more accurate front-on than
+side-on).
+
+\subsection{Particle filter}
+
+The more particles you have, the better the estimate but the slower
+the computation.
+
+
+\end{document}

@@ -1,0 +1,13 @@
+*.pyc
+*.pyo
+*.swp
+*~
+*#
+.#*
+\#*
+*.pdf
+*.bak
+*.aux
+*.log
+*.png
+
