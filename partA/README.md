@@ -7,6 +7,6 @@ ENMT482 Sensor Fusion Assignment
 
 `test.csv` -- use this dataset with your Bayes filter to estimate the robot's location (note this does not contain the ground truth).
 
-`plot_calibration.py` -- this plots the sensor data.
+`plot-calibration.py` -- this plots the sensor data.
 	
 `plot-speeds.py` -- this plots the commanded robot speed and the estimated robot speed.  It is useful for pondering the motion model.
