@@ -9,7 +9,7 @@ University of Canterbury
 """
 
 from __future__ import print_function, division
-from models_1 import motion_model, sensor_model
+from models import motion_model, sensor_model
 from numpy import array, any, set_printoptions
 from utils import wraptopi
 from numpy import pi, newaxis
