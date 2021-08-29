@@ -6,16 +6,20 @@ University of Canterbury
 """
 
 from __future__ import print_function, division
-from numpy.random import uniform
-import matplotlib
-# May need to comment out following line for MacOS
-matplotlib.use("TkAgg")
+from numpy.random import uniform, seed
+try:
+    import matplotlib; matplotlib.use("TkAgg")        
+except:
+    import matplotlib; matplotlib.use("Qt5Agg")
+
 from models import motion_model, sensor_model
 from utils import *
 from plot import *
 from transform import *
 import numpy as np
 
+
+seed(1)
 
 # Load data
 
@@ -64,6 +68,8 @@ odom_poses = transform_pose(odom_to_map, odom_poses)
 plt.ion()
 fig = plt.figure(figsize=(10, 5))
 axes = fig.add_subplot(111)
+fig.canvas.mpl_connect('key_press_event', keypress_handler)
+fig.canvas.manager.full_screen_toggle()
 
 plot_beacons(axes, beacon_locs, label='Beacons')
 plot_path(axes, slam_poses, '-', label='SLAM')
@@ -112,14 +118,18 @@ for m in range(Nparticles):
 Nposes = odom_poses.shape[0]
 est_poses = np.zeros((Nposes, 3))
 
+plot_particles(axes, poses, weights)
+axes.set_title('Push space to start/stop, dot to move one step, q to quit...')
+wait_until_key_pressed()
+
+state = 'run'
 display_step_prev = 0
-# Iterate over each timestep.
 for n in range(start_step + 1, Nposes):
 
     # TODO: write motion model function
     poses = motion_model(poses, commands[n-1], odom_poses[n], odom_poses[n - 1],
                          t[n] - t[n - 1])
-
+    
     if beacon_visible[n]:
 
         beacon_id = beacon_ids[n]
@@ -140,7 +150,7 @@ for n in range(start_step + 1, Nposes):
 
     est_poses[n] = poses.mean(axis=0)
 
-    if n > display_step_prev + display_steps:
+    if (n > display_step_prev + display_steps) or state == 'step':
         print(n)
 
         # Show particle cloud
@@ -153,6 +163,23 @@ for n in range(start_step + 1, Nposes):
         plot_path_with_visibility(axes, est_poses[display_step_prev-1 : n+1],
                                   '-', visibility=beacon_visible[display_step_prev-1 : n+1])
         display_step_prev = n
+
+        print(state)
+        
+    key = get_key()
+    if key == '.':
+        state = 'step'
+    elif key == ' ':
+        if state == 'run':
+            state = 'pause'
+        else:
+            state = 'run'
+
+    if state == 'pause':
+        wait_until_key_pressed()
+    elif state == 'step':
+        wait_until_key_pressed()            
+
 
 # Display final plot
 print('Done, displaying final plot')
