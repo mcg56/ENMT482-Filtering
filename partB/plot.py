@@ -8,7 +8,23 @@ University of Canterbury
 import matplotlib.pyplot as plt
 import numpy as np
 
+# The last key that is pressed or None
+key = None
 
+def keypress_handler(event):
+    """This is called whenever a key is pressed."""
+    global key
+    key = event.key
+
+    
+def get_key():
+    global key
+
+    ret = key
+    key = None
+    return ret
+    
+    
 def plot_poses(axes, poses, colour='green'):
     x = poses[:, 0]
     y = poses[:, 1]
@@ -58,7 +74,7 @@ def plot_particles(axes, poses, weights, colourmap='viridis'):
     axes.particles = []
     for m in range(len(x)):
         l, = axes.plot(x[m], y[m], marker=(3, 0, theta[m] + 180),
-                       color=colours[m], markersize=5, linestyle=None)
+                       color=colours[m], markersize=5, linestyle='')
         axes.particles.append(l)
 
 
@@ -139,3 +155,18 @@ def clean_poses(poses):
         else:
             last_good = i
     return clean_poses
+
+
+def pause_if_key_pressed():
+
+    # False for mouse, True for key, None timeout    
+    if plt.waitforbuttonpress(timeout=1e-3) is True:
+        while plt.waitforbuttonpress(timeout=100) is False:
+            continue
+
+def wait_until_key_pressed():
+
+    # False for mouse, True for key, None timeout        
+    while plt.waitforbuttonpress(timeout=100) is not True:
+        continue
+    
