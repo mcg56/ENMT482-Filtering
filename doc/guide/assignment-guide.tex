@@ -273,5 +273,22 @@ side-on).
 The more particles you have, the better the estimate but the slower
 the computation.
 
+Here's what I suggest you do:
+
+\begin{enumerate}
+\item Test motion model without adding noise to particles and disable
+  sensor model.  The particles should move in the correct direction.
+
+\item Test motion model with added noise and disable sensor model.
+  The particles should move in the correct direction but spread out.
+
+\item Enable sensor model but with large standard deviations for the
+  range and bearing errors.  The particles should get closer together
+  whenever a beacon is visible.
+
+\item Reduce standard deviations in sensor model to get better
+  tracking.
+\end{enumerate}
+
 
 \end{document}
