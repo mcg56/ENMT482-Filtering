@@ -59,7 +59,7 @@ def test_move(v, omega=0, heading=0, lheading=0, dt=1):
     commands = array((v, omega))
     poses = motion_model(poses, commands, odom_pose, odom_prev_pose, dt)
     if any(abs(poses - expected_pose) > 1e-12):
-        raise ValueError('Expected %s got %s.  Did you set motion error to 0?' % (poses[0], expected_pose))
+        raise ValueError('Expected %s got %s.  Did you set motion error to 0?' % (expected_pose, poses[0]))
     print('Passed v=%.3f, omega=%.3f, heading=%.3f, lheading=%.3f' % (v, omega, heading, lheading))
 
     
