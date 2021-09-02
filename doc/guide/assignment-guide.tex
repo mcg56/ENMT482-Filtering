@@ -91,7 +91,7 @@ def model(x, a, b, c):
 
 params, cov = curve_fit(model, x, z)    
 
-zfit = func(x, *params)
+zfit = model(x, *params)
 
 zerror = z - xfit
 \end{minted}
