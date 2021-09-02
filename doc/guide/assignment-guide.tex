@@ -1,6 +1,8 @@
 \documentclass[a4paper, 12]{article}
 \usepackage{url}
 \usepackage{pgf}
+% This requires pdflatex -shell-escape
+\usepackage{minted}
 
 \setlength{\oddsidemargin}{0mm}
 \setlength{\evensidemargin}{-14mm}
@@ -73,12 +75,31 @@ In general, for each sensor, you want a model of the form:
   %
     \begin{equation}
     v_n = z_n - h(x_n).
-  \end{equation}
+    \end{equation}
 
-  If you are good at programming, there are many tools you can use for
-  this.  The tricky aspect is dealing with outliers.  If you are not
-  good at programming, tweak your model parameters using
-  trial-and-error until you get a good fit.
+    Here's some example Python code for finding the unknown parameters:
+%
+\begin{minted}{bash}
+from scipy.optimize import curve_fit
+
+def model(x, a, b, c):
+
+    return a + b * x + c * x * x
+
+    
+# Load data x, z
+
+params, cov = curve_fit(model, x, z)    
+
+zfit = func(x, *params)
+
+zerror = z - xfit
+\end{minted}
+
+  The tricky aspect is dealing with outliers.  One approach is to
+  iteratively fit a model and then remove the obvious outliers.  If
+  you are not good at programming, just tweak your model parameters
+  using trial-and-error until you get a good fit.
 
   \begin{figure}[!h]
   \centering
