@@ -198,7 +198,9 @@ sensors around the current best estimate of the robot's position.
 \item For each sensor, invert its model $h(x)$ so that given a
   measurement $z$ you can have an estimate, $\est{x}$, for $x$.
   However, some non-linear models are not easily invertible and so you
-  may need to use interpolation to find $\est{x}$ given $z$.
+  may need to use interpolation to find $\est{x}$ given $z$.  Another
+  approach is to use a bisection algorithm using $h(x) - z$ to find
+  the root.
 
 \item For each sensor, determine its noise variance $\var{V}(x)$ at
   the current best estimate for $x$.
@@ -227,6 +229,20 @@ sensors around the current best estimate of the robot's position.
   notes).
 
 \item Rinse and repeat.
+\end{enumerate}
+
+Tips:
+%
+\begin{enumerate}
+\item Test your filter with just the motion model.
+
+\item Test your filter with the motion model and the best sensor and
+  plot the BLUE weights.  Do not worry about range varying variance;
+  just use worst-case result.  Single step each time-step and check
+  the calculations.
+
+\item Test your filter with the motion model and the two best sensors
+  and plot the BLUE weights.
 \end{enumerate}
 
 
@@ -258,7 +274,7 @@ Once the particles are moving correctly, add some random behaviour to
 the motion of each particle to mimic process noise.  The amount of
 randomness depends on how good your motion model is.  However, it is
 difficult to evaluate the process noise and I suggest that you tweak
-this by trial and error.
+this by trial and error, starting with a small amount of noise.
 
 
 \subsection{Sensor model}
