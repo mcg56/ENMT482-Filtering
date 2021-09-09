@@ -200,7 +200,8 @@ sensors around the current best estimate of the robot's position.
   However, some non-linear models are not easily invertible and so you
   may need to use interpolation to find $\est{x}$ given $z$.  Another
   approach is to use a bisection algorithm using $h(x) - z$ to find
-  the root.
+  the root.  Some models are invertible but have multiple solutions.
+  In this case, choose the solution closest to the current estimate.
 
 \item For each sensor, determine its noise variance $\var{V}(x)$ at
   the current best estimate for $x$.
