@@ -21,7 +21,7 @@ There are six sensors:
 * ir3 is a Sharp GP2Y0A21YK infrared rangefinder (10--80 cm)
 * ir4 is a Sharp GP2Y0A710K0F infrared rangefinder (1--5 m)
 
-Note that aside from sonar2, all of these sensors are Chinese knock-offs and thus their actual performance characteristics may not match their specifications.
+Note that aside from sonar2, all of these sensors are knock-offs and thus their actual performance characteristics may not match their specifications.
 
 Your task is to choose three of the sensors (not including sonar2) and use the measurements from these three sensors along with the commanded speed to estimate the robot's position.  You are provided with three datasets as CSV files, each containing true position, commanded velocity, and the sensor measurements.   From the dataset 'calibration.csv' you can determine the probabilistic sensor models; from the datasets 'training1.csv' and 'training2.csv' you can determine the probabilistic motion models.
 
@@ -36,18 +36,22 @@ Hints:
 
 1. Each sensor has an observation model of the form: $$Z = h(X) + V(X),$$ so you should determine $h(X)$ and $f_V(v; x)$ for each sensor from the calibration data.
 
-2. A good fit should have a zero-mean error.
+2. First plot the measured data as a function of $x$.
 
-3. Some sensors have many outliers that you will need to exclude.
+3. Postulate a function, $h(x)$, to fit the data.  A good fit should have a zero-mean error.
 
-4. To determine the motion model, I suggest estimating the measured speed and comparing this with the commanded speed.
+4. Some sensors have many outliers that you will need to exclude.  You may need to use iteration.
 
-    
+5. You can determine the variance of $V$ from the residuals between the measured and modelled data.
+
+6. To determine the motion model, I suggest estimating the measured speed and comparing this with the commanded speed.
+
+
 Part B (Particle filter)
 ------------------------
 I have replicated the example in Lecture 12 using a Turtlebot robot, with fiducial markers for the beacons.  You can see some of these markers placed around the Automation lab and the hallway, along the route we used for the lab.  An image of one of these markers can be used to estimate the six-degree-of-freedom transformation between the robot and the marker, but for our purposes I've just kept $x$, $y$ and rotation.  The variance of the estimate is approximately proportional to the square of the distance between the robot and the marker.
 
-Your task is to implement a particle filter which uses the beacon observations and either odometry and/or commanded velocity/rotation rate to estimate the robot's location.  You are provided with one dataset as a CSV file, containing a ``true'' position from SLAM, estimated positions from odometry, the commanded forward speed and rotation rate, and the ID and position of any beacon observations.  When two beacons are visible to the camera, there are two rows with the same time and position but different beacon observations.  Additionally, you are provided with a CSV file containing the location of each beacon.  Again, some Python example code is provided (I had to restrain myself from using classes).
+Your task is to implement a particle filter which uses the beacon observations and either odometry and/or commanded velocity/rotation rate to estimate the robot's location.  You are provided with one dataset as a CSV file, containing a ``true'' position from SLAM, estimated positions from odometry, the commanded forward speed and rotation rate, and the ID and position of any beacon observations.  When two beacons are visible to the camera, there are two rows with the same time and position but different beacon observations.  Additionally, you are provided with a CSV file containing the location of each beacon.  Again, some Python example code is provided (I had to restrain myself to not use classes).
 
 If you wish, you may use the true position to initialise your particles, but you must not use it after that.  For extra credit, make your implementation robust to unknown starting positions.
 
@@ -75,24 +79,25 @@ anti-clockwise from the $x$ direction of the base-frame.
 
 For your particle filter to work:
 
-* You will need to understand the difference between the global (map)
+1. You will need to understand the difference between the global (map)
 coordinates and the local (robot) coordinates and how to transform
 between the two.  It is easy to get your coordinate transformations
 confused so I suggest plotting some data points on graph paper to
 check.
 
-* An accurate motion model.  I recommend testing this first without the sensor model.  The particles should move in the correct direction and spread out with time.
+2. An accurate motion model.  I recommend testing this first without the sensor model.  The particles should move in the correct direction and spread out with time.
 
-* An accurate sensor model.
+3. An accurate sensor model.  Unfortunately, there is no calibration
+  data so some trial and error is required.  A range standard deviation of 0.1 m and an angle standard deviation of 0.1 radian will get you in the ballpark.
 
 
 A pose $(x_1, y_1; \theta_1)$ in coordinate frame 1 can be converted
  to a pose $(x_2, y_2; \theta_2)$ in coordinate frame 2 using
- 
+
 $$
  \begin{aligned}
  x_2 & =  x_1 \cos \Delta\theta - y_1 \sin \Delta \theta + \Delta x, \\
- y_2 & =  y_1 \cos \Delta\theta + x_1 \sin \Delta \theta + \Delta y, \\ 
+ y_2 & =  y_1 \cos \Delta\theta + x_1 \sin \Delta \theta + \Delta y, \\
  \theta_2 &= \theta_1 + \Delta \theta,
  \end{aligned}
 $$
@@ -104,7 +109,7 @@ The inverse transformation is
 $$
  \begin{aligned}
  x_1 & = (x_2 - \Delta x) \cos \Delta\theta + (y_2 - \Delta y) \sin \Delta \theta, \\
- y_1 & = (y_2 - \Delta y) \cos \Delta\theta - (x_2 - \Delta x) \sin \Delta \theta, \\ 
+ y_1 & = (y_2 - \Delta y) \cos \Delta\theta - (x_2 - \Delta x) \sin \Delta \theta, \\
  \theta_1 &= \theta_2 - \Delta \theta.
  \end{aligned}
 $$
@@ -152,7 +157,7 @@ Each of the following is marked equally:
 1. Part B sensor models
 1. Part B motion models
 1. Part B implementation
-1. Part B results 
+1. Part B results
 1. Part B discussion
 1. Part C map and gmapping observations
 
