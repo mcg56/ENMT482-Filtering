@@ -3,6 +3,10 @@
 M.P. Hayes and M.J. Edwards,
 Department of Electrical and Computer Engineering
 University of Canterbury
+
+Note, this example is written in an attempt to be straightforward
+to follow for those new to Python.  Normally, we would have written
+it using about a dozen classes.
 """
 
 from __future__ import print_function, division
@@ -98,7 +102,9 @@ Nparticles = 100
 # TODO: How many steps between display updates
 display_steps = 10
 
-# TODO: Set initial belief
+# TODO: Set initial belief.  This assumes a uniform distribution for the pose
+# around the known starting pose.  It simplifies the localisation to a
+# tracking problem.
 start_pose = slam_poses[start_step]
 Xmin = start_pose[0] - 0.1
 Xmax = start_pose[0] + 0.1
@@ -126,7 +132,7 @@ state = 'run'
 display_step_prev = 0
 for n in range(start_step + 1, Nposes):
 
-    # TODO: write motion model function
+    # TODO: write motion model function in models.py
     poses = motion_model(poses, commands[n-1], odom_poses[n], odom_poses[n - 1],
                          t[n] - t[n - 1])
     
@@ -136,7 +142,7 @@ for n in range(start_step + 1, Nposes):
         beacon_loc = beacon_locs[beacon_id]
         beacon_pose = beacon_poses[n]
 
-        # TODO: write sensor model function
+        # TODO: write sensor model function in models.py
         weights *= sensor_model(poses, beacon_pose, beacon_loc)
 
         if sum(weights) < 1e-50:
