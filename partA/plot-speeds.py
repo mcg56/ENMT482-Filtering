@@ -2,7 +2,9 @@ import numpy as np
 from matplotlib.pyplot import subplots, show
 
 # Load data
-filename = 'calibration.csv'
+# filename = 'calibration.csv'
+
+filename = 'partA/calibration.csv'
 data = np.loadtxt(filename, delimiter=',', skiprows=1)
 
 # Split into columns
