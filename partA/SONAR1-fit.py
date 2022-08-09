@@ -28,12 +28,7 @@ def modelCubic(x, a, b, c, d):
 def modelExpoential(x, a, b, c):
     return a + np.exp(-1 * b * (x + c))
 
-# online
-def variance(data):
-    n = len(data)
-    deviations = [pow(x,2) for x in data]
-    variance = sum(deviations)/n
-    return variance
+
 
 # Find best fit whilst removing outliers
 def iterativeCurveFit(x, z):
@@ -44,6 +39,15 @@ def iterativeCurveFit(x, z):
     zerror_1 = z_raw - zfit
     #print(sum(abs(zerror))/len(zerror))
 
+    #Calculating variance
+    lookUpTable = []
+    step = math.floor(len(x)/10)
+    for k in range(0, 10):
+        print(z_raw[k*step: (k+1)*step])
+        lookUpTable.append(np.var(z_raw[k*step: (k+1)*step]))
+    print(lookUpTable)
+
+    np.savetxt('raw.csv', z_raw, delimiter=',')
     initialTolerance = 2
     desiredTolerance = 0.1
     increment = 0.01
@@ -60,10 +64,10 @@ def iterativeCurveFit(x, z):
         zfit = modelLinear(x, *params)
         zerror = z - zfit
 
-    print(sum(abs(zerror))/len(zerror))
+    #print(sum(abs(zerror))/len(zerror))
     #plt.plot(x, z, '.')
 
-    print(params)
+    #print(params)
     fig, axes = subplots(2,2)
     fig.suptitle('Test Fit')
 
@@ -96,6 +100,5 @@ def iterativeCurveFit(x, z):
     show()
 
 iterativeCurveFit(x, z)
-
 
 
