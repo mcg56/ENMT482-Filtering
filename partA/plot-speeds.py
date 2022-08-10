@@ -4,7 +4,7 @@ from matplotlib.pyplot import subplots, show
 from scipy.optimize import curve_fit
 
 # Load data
-filename = 'training1.csv'
+filename = 'calibration.csv'
 data = np.loadtxt(filename, delimiter=',', skiprows=1)
 
 # Split into columns
