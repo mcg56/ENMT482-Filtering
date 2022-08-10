@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from matplotlib.pyplot import subplots, show
 from scipy.optimize import curve_fit
 
@@ -18,26 +19,28 @@ distance_estimate = [0]
 for index in range(len(velocity_command) - 1):
     distance_estimate.append(distance_estimate[index] + velocity_command[index]*time[index]/2000)
 
-fig, axes = subplots(6)
-fig.suptitle('Motion Model')
+# fig, axes = subplots(2)
+# fig.suptitle('Motion Model')
 
-axes[0].plot(velocity_command[1:], velocity_estimate, '.', alpha=0.2)
-axes[0].set_title('Command vs estimate')
+plt.plot(time[1:], velocity_estimate, '-')
+plt.title('Command vs estimate')
 
-axes[1].plot(distance[1:], velocity_estimate - velocity_command[1:], '.', alpha=0.2)
-axes[1].set_title('Estimate error over distance')
+plt.plot(time, velocity_command, '-')
 
-axes[2].plot(velocity_estimate, velocity_estimate - velocity_command[1:], '.', alpha=0.2)
-axes[2].set_title('Estimate error over velocity')
+# axes[1].plot(time[1:], velocity_estimate - velocity_command[1:], '.', alpha=0.2)
+# axes[1].set_title('Estimate error over distance')
 
-axes[3].plot(acceleration_estimate, velocity_estimate[1:] - velocity_command[2:], '.', alpha=0.2)
-axes[3].set_title('Estimate error over acceleration')
+# axes[2].plot(velocity_estimate, velocity_estimate - velocity_command[1:], '.', alpha=0.2)
+# axes[2].set_title('Estimate error over velocity')
 
-axes[4].plot(time[1:], velocity_estimate - velocity_command[1:], '.', alpha=0.2)
-axes[4].set_title('Estimate error over time')
+# axes[3].plot(acceleration_estimate, velocity_estimate[1:] - velocity_command[2:], '.', alpha=0.2)
+# axes[3].set_title('Estimate error over acceleration')
 
-axes[5].plot(time, distance, '.', alpha=0.2)
-axes[5].plot(time, distance_estimate, '.', alpha=0.2)
-axes[5].set_title('Distance over time')
+# axes[4].plot(time[1:], velocity_estimate - velocity_command[1:], '.', alpha=0.2)
+# axes[4].set_title('Estimate error over time')
+
+# axes[5].plot(time, distance, '.', alpha=0.2)
+# axes[5].plot(time, distance_estimate, '.', alpha=0.2)
+# axes[5].set_title('Distance over time')
 
 show()
