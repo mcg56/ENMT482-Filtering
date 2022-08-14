@@ -1,10 +1,11 @@
+from posixpath import abspath
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import subplots, show
 from scipy.optimize import curve_fit
 
 # Load data
-filename = 'calibration.csv'
+filename = 'training2.csv'
 data = np.loadtxt(filename, delimiter=',', skiprows=1)
 
 # Split into columns
@@ -15,17 +16,37 @@ index, time, distance, velocity_command, raw_ir1, raw_ir2, raw_ir3, raw_ir4, \
 velocity_estimate = (distance[1:] - distance[:-1])/(time[1:]-time[:-1])
 acceleration_estimate = (velocity_estimate[1:] - velocity_estimate[:-1])/(time[2:]-time[:-2])
 
-distance_estimate = [0]
+velocity_modelled = [0]
 for index in range(len(velocity_command) - 1):
-    distance_estimate.append(distance_estimate[index] + velocity_command[index]*time[index]/2000)
+    new_velocity = velocity_command[index]
+    if (abs(velocity_command[index]) > abs(velocity_modelled[index])):
+        new_velocity -= (velocity_command[index] - velocity_modelled[index])*0.92
+    velocity_modelled.append(new_velocity)
 
-# fig, axes = subplots(2)
-# fig.suptitle('Motion Model')
+distance_modelled = [0]
+distance_crude_model = [0]
 
-plt.plot(time[1:], velocity_estimate, '-')
-plt.title('Command vs estimate')
+for index in range(len(velocity_command) - 1):
+    distance_modelled.append(distance_modelled[index] + velocity_modelled[index]*(time[index+1]-time[index]))
+    distance_crude_model.append(distance_crude_model[index]+velocity_command[index]*(time[index+1]-time[index]))
 
-plt.plot(time, velocity_command, '-')
+
+fig, axes = subplots(2)
+fig.suptitle('Motion Model')
+
+axes[0].set_title('Command vs estimate')
+axes[0].plot(time, velocity_command, '-')
+axes[0].plot(time[1:], velocity_estimate, '-')
+axes[0].plot(time, velocity_modelled)
+axes[0].legend(["command", "actual", "modelled"])
+
+axes[1].plot(time, distance_crude_model)
+axes[1].plot(time, distance)
+axes[1].plot(time, distance_modelled)
+axes[1].legend(["command", "actual", "modelled"])
+
+
+
 
 # axes[1].plot(time[1:], velocity_estimate - velocity_command[1:], '.', alpha=0.2)
 # axes[1].set_title('Estimate error over distance')
