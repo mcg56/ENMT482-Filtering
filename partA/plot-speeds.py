@@ -1,67 +1,57 @@
-from posixpath import abspath
 import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib.pyplot import subplots, show
-from scipy.optimize import curve_fit
 
-# Load data
-filename = 'training2.csv'
-data = np.loadtxt(filename, delimiter=',', skiprows=1)
+class data_t:
+    def __init__(self, filename):
+        self.filename = filename
+        self.index = []
+        self.time = []
+        self.distance = []
+        self.velocity_command = []
+        self.raw_ir1 = []
+        self.raw_ir2 = []
+        self.raw_ir3 = []
+        self.raw_ir4 = []
+        self.sonar1 = []
+        self.sonar2 = []
 
-# Split into columns
-index, time, distance, velocity_command, raw_ir1, raw_ir2, raw_ir3, raw_ir4, \
-    sonar1, sonar2 = data.T
+    def load_data(self):
+        np_data = np.loadtxt(self.filename, delimiter=',', skiprows=1)
+        self.index, self.time, self.distance, self.velocity_command, self.raw_ir1, self.raw_ir2, self.raw_ir3, self.raw_ir4, self.sonar1, self.sonar2 = np_data.T
+
+data = data_t('training2.csv')
+data.load_data()
 
 
-velocity_estimate = (distance[1:] - distance[:-1])/(time[1:]-time[:-1])
-acceleration_estimate = (velocity_estimate[1:] - velocity_estimate[:-1])/(time[2:]-time[:-2])
+velocity_estimate = (data.distance[1:] - data.distance[:-1])/(data.time[1:]-data.time[:-1])
 
 velocity_modelled = [0]
-for index in range(len(velocity_command) - 1):
-    new_velocity = velocity_command[index]
-    if (abs(velocity_command[index]) > abs(velocity_modelled[index])):
-        new_velocity -= (velocity_command[index] - velocity_modelled[index])*0.92
+for index in range(len(data.velocity_command) - 1):
+    new_velocity = data.velocity_command[index]
+    if (abs(data.velocity_command[index]) > abs(velocity_modelled[index])):
+        new_velocity -= (data.velocity_command[index] - velocity_modelled[index])*0.92
     velocity_modelled.append(new_velocity)
 
 distance_modelled = [0]
 distance_crude_model = [0]
 
-for index in range(len(velocity_command) - 1):
-    distance_modelled.append(distance_modelled[index] + velocity_modelled[index]*(time[index+1]-time[index]))
-    distance_crude_model.append(distance_crude_model[index]+velocity_command[index]*(time[index+1]-time[index]))
+for index in range(len(data.velocity_command) - 1):
+    distance_modelled.append(distance_modelled[index] + velocity_modelled[index]*(data.time[index+1]-data.time[index]))
+    distance_crude_model.append(distance_crude_model[index]+data.velocity_command[index]*(data.time[index+1]-data.time[index]))
 
 
 fig, axes = subplots(2)
 fig.suptitle('Motion Model')
 
 axes[0].set_title('Command vs estimate')
-axes[0].plot(time, velocity_command, '-')
-axes[0].plot(time[1:], velocity_estimate, '-')
-axes[0].plot(time, velocity_modelled)
+axes[0].plot(data.time, data.velocity_command, '-')
+axes[0].plot(data.time[1:], velocity_estimate, '-')
+axes[0].plot(data.time, velocity_modelled)
 axes[0].legend(["command", "actual", "modelled"])
 
-axes[1].plot(time, distance_crude_model)
-axes[1].plot(time, distance)
-axes[1].plot(time, distance_modelled)
+axes[1].plot(data.time, distance_crude_model)
+axes[1].plot(data.time, data.distance)
+axes[1].plot(data.time, distance_modelled)
 axes[1].legend(["command", "actual", "modelled"])
-
-
-
-
-# axes[1].plot(time[1:], velocity_estimate - velocity_command[1:], '.', alpha=0.2)
-# axes[1].set_title('Estimate error over distance')
-
-# axes[2].plot(velocity_estimate, velocity_estimate - velocity_command[1:], '.', alpha=0.2)
-# axes[2].set_title('Estimate error over velocity')
-
-# axes[3].plot(acceleration_estimate, velocity_estimate[1:] - velocity_command[2:], '.', alpha=0.2)
-# axes[3].set_title('Estimate error over acceleration')
-
-# axes[4].plot(time[1:], velocity_estimate - velocity_command[1:], '.', alpha=0.2)
-# axes[4].set_title('Estimate error over time')
-
-# axes[5].plot(time, distance, '.', alpha=0.2)
-# axes[5].plot(time, distance_estimate, '.', alpha=0.2)
-# axes[5].set_title('Distance over time')
 
 show()
