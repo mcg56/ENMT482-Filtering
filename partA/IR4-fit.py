@@ -5,7 +5,7 @@ import math
 
 
 # Load data
-filename = 'partA/calibration.csv'
+filename = 'calibration.csv'
 data = np.loadtxt(filename, delimiter=',', skiprows=1)
 
 # Split into columns
@@ -81,6 +81,8 @@ axes[0].plot(distance, z_3fit, '.', alpha=0.2)
 
 # axes[1].plot(distance, zerror, '.', alpha=0.2)
 # axes[1].set_title('Fit')
+axes[1].plot(raw_ir4, distance, '.', alpha=0.2)
+axes[1].set_title('Fit')
 
 axes[0].set_ylim(bottom=0,top=5)
 

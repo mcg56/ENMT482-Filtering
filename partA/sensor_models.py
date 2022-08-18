@@ -1,5 +1,5 @@
 import numpy as np
-from matplotlib.pyplot import subplots, show
+from matplotlib.pyplot import *
 from scipy.optimize import curve_fit
 import math
 
@@ -15,8 +15,8 @@ def modelHyperbole(x, a, b, c):
 def modelHyperbole_1(x, a, b, c):
     return a + b / x + c*x
 
-def inverseLinear(z, a, b):
-    return (z - b)/a
+def inverseLinear(z, m, c):
+    return (z - c)/m
 
 def inverseHyperbola(z, a, b):
     return a/(z-b)
@@ -65,16 +65,11 @@ def modelIR3(plot=False):
     params, cov = curve_fit(modelHyperbole, x_1, z_1)
     z_1fit = modelHyperbole(x_1, *params)
     z_error_1 = z_1 - z_1fit
-    var_1 = np.var(z_error_1[:100])
-    print(var_1) #TESTING
 
     params, cov = curve_fit(modelLinear, x_2, z_2)
-    print(params) #TESTING
     z_2fit = modelLinear(x_2, *params)
     z_error_2 = z_2 - z_2fit
-    var_2 = np.var(z_error_2)
-    print(var_2) #TESTING
-
+    
     # zerror = np.concatenate((z_error_1), axis=None)      
     zerror = np.concatenate((z_error_1, z_error_2), axis=None)
 
@@ -82,11 +77,15 @@ def modelIR3(plot=False):
     x_1_1,z_1_1 = iterative_fitting(modelHyperbole, final_deviation, x_1, z_1, z_error_1)
     params_1, cov = curve_fit(modelHyperbole, x_1_1, z_1_1)
     z_1_1fit = modelHyperbole(x_1_1, *params_1)
+    z_error_1_1 = z_1_1 - z_1_1fit
+    var_1 = np.var(z_error_1_1)
 
     # Remove outliers and remodel
     x_2_1,z_2_1 = iterative_fitting(modelLinear, final_deviation, x_2, z_2, z_error_2)
     params_2, cov = curve_fit(modelLinear, x_2_1, z_2_1)
     z_2_1fit = modelLinear(x_2_1, *params_2)
+    z_error_2_1 = z_2_1 - z_2_1fit
+    var_2 = np.var(z_error_2_1)
 
 
 
@@ -107,8 +106,7 @@ def modelIR3(plot=False):
         axes[1].set_title('Fit')
         show()
 
-    result = params_1, params_2, var_1, var_2
-    print(result)
+    result = [params_1, params_2], [var_1, var_2]
     return result
 
 
@@ -146,22 +144,14 @@ def modelIR4(plot=False):
     params, cov = curve_fit(modelParabola, x_1, z_1)
     z_1fit = modelParabola(x_1, *params)
     z_error_1 = z_1 - z_1fit
-    var_1 = np.var(z_error_1[:100])
-    print(var_1) #TESTING
 
     params, cov = curve_fit(modelLinear, x_2, z_2)
-    print(params) #TESTING
     z_2fit = modelLinear(x_2, *params)
     z_error_2 = z_2 - z_2fit
-    var_2 = np.var(z_error_2)
-    print(var_2) #TESTING
 
     params, cov = curve_fit(modelHyperbole, x_3, z_3)
-    print(params) #TESTING
     z_3fit = modelHyperbole(x_3, *params)
     z_error_3 = z_3 - z_3fit
-    var_3 = np.var(z_error_3)
-    print(var_3) #TESTING
 
     zerror = np.concatenate((z_error_1, z_error_2, z_error_3), axis=None)
 
@@ -169,16 +159,22 @@ def modelIR4(plot=False):
     x_1_1,z_1_1 = iterative_fitting(modelParabola, final_deviation, x_1, z_1, z_error_1)
     params_1, cov = curve_fit(modelParabola, x_1_1, z_1_1)
     z_1_1fit = modelParabola(x_1_1, *params_1)
+    z_error_1_1 = z_1_1 - z_1_1fit
+    var_1 = np.var(z_error_1_1)
 
     # Remove outliers and remodel
     x_2_1,z_2_1 = iterative_fitting(modelLinear, final_deviation, x_2, z_2, z_error_2)
     params_2, cov = curve_fit(modelLinear, x_2_1, z_2_1)
     z_2_1fit = modelLinear(x_2_1, *params_2)
+    z_error_2_1 = z_2_1 - z_2_1fit
+    var_2 = np.var(z_error_2_1)
 
     # Remove outliers and remodel
     x_3_1,z_3_1 = iterative_fitting(modelHyperbole, final_deviation, x_3, z_3, z_error_3)
     params_3, cov = curve_fit(modelHyperbole, x_3_1, z_3_1)
     z_3_1fit = modelHyperbole(x_3_1, *params_3)
+    z_error_3_1 = z_3_1 - z_3_1fit
+    var_3 = np.var(z_error_3_1)
 
 
 
@@ -199,6 +195,9 @@ def modelIR4(plot=False):
         axes[1].plot(distance, zerror, '.', alpha=0.2)
         axes[1].set_title('Fit')
         show()
+
+    result = [params_1, params_2, params_3], [var_1, var_2, var_3]
+    return result
     
 def modelSonar(plot=False):
     # Wariables
@@ -221,7 +220,7 @@ def modelSonar(plot=False):
     z_1fit = modelLinear(x_1, *params)
     z_error_1 = z_1 - z_1fit
     var_1 = np.var(z_error_1[:100])
-    print(var_1) #TESTING
+    # print(var_1) #TESTING
 
 
 
@@ -241,8 +240,9 @@ def modelSonar(plot=False):
     #     var = np.var(z_error[bin*bin_width: (bin+1)*bin_width])
     #     var_lut.append([LUT_range, var])
     # print(var_lut)
-    
-    print(np.var(z_error))
+
+    var = np.var(z_error)
+    # print(np.var(z_error))
 
     if (plot == True):
         fig, axes = subplots(2)
@@ -257,8 +257,9 @@ def modelSonar(plot=False):
         axes[1].plot(x_1_1, z_1_1, '.', alpha=0.2)
         axes[1].set_title('Fit')
         show()
+    return params_1, var
 
 
-#modelIR3(True)
+# modelIR3(True)
 # modelIR4(True)
-modelSonar(True)
+# modelSonar(True)

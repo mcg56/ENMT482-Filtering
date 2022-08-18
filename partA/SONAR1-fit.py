@@ -5,7 +5,7 @@ from scipy.optimize import curve_fit
 import math
 
 # Load data
-filename = 'partA/sonar1-calibration.csv'
+filename = 'sonar1-calibration.csv'
 data = np.loadtxt(filename, delimiter=',', skiprows=1)
 x_raw, z_raw = data.T
 x, z = data.T
@@ -47,7 +47,7 @@ def iterativeCurveFit(x, z):
         lookUpTable.append(np.var(z_raw[k*step: (k+1)*step]))
     print(lookUpTable)
 
-    np.savetxt('raw.csv', z_raw, delimiter=',')
+    #np.savetxt('raw.csv', z_raw, delimiter=',')
     initialTolerance = 2
     desiredTolerance = 0.1
     increment = 0.01

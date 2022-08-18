@@ -1,5 +1,6 @@
 import numpy as np
-from matplotlib.pyplot import subplots, show
+from matplotlib.pyplot import *
+from sensor_models import *
 
 class Data_t:
     def __init__(self, filename):
@@ -48,6 +49,15 @@ class Kalman_filter_t:
     def update_posterior(self):
         pass
 
+class Sensor_t:
+    def __init__(self):
+        """Class for reading command and sensor data in order to create Kalman Filter"""
+        self.parameters = []
+        self.model_variance = []
+        self.mle_variance = []
+        self.mle = []
+        self.equations = []
+
 def plot_data(data: TrainingData_t, filter: Kalman_filter_t):
     fig, axes = subplots(2)
     fig.suptitle('Motion Model')
@@ -66,13 +76,42 @@ def main():
     initial_position = 0
     initial_variance = 0
 
+    # Init Sensors
+    sonar = Sensor_t()
+    ir3 = Sensor_t()
+    ir4 = Sensor_t()
+
+    # Sensor Model Estimation
+    sonar.parameters, sonar.model_variance = modelSonar()
+    ir3.parameters, ir3.model_variance = modelIR3()
+    ir4.parameters, ir4.model_variance = modelIR4()
+
+    ######### TESTING ############
+    print(len(data.sonar1))
+    sonarArray = [0]
+    ##############################
+
     filter = Kalman_filter_t(initial_position, initial_variance)
 
     for index in range(1, len(data.time), 1):
         filter.update_prior(data.velocity_command[index], data.time_step)
         filter.update_posterior()
 
+        # Inverse sonar model trial
+        sonar.mle = inverseLinear(data.sonar1[index], sonar.parameters[0], sonar.parameters[1])
+        sonarArray.append(sonar.mle) # TESTING
+
+        # Inverse IR model trial
+
+
+    ############## TESTING ##############
     plot_data(data, filter)
+    fig, axes = subplots(2, 1)
+    fig.suptitle('Calibration data')
+    axes[0].plot(data.time, sonarArray, '.', alpha=0.2, label="True distance")
+    axes[0].plot(data.time, data.distance, '.', alpha=0.2, label="True distance")
+    show()
+    ####################################
 
 if __name__ == "__main__":
     main()
