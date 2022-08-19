@@ -124,10 +124,10 @@ class TrainingData_t(Data_t):
         fig.suptitle('Kalman Filter')
 
         axes[0].plot(self.time, self.distance)
-        axes[0].plot(self.time, [measurement.mle for measurement in self.just_sensor])
+        # axes[0].plot(self.time, [measurement.mle for measurement in self.just_sensor])
         axes[0].plot(self.time, [measurement.mle for measurement in self.measurements])
         axes[0].plot(self.time, [measurement.mle for measurement in self.just_motion])
-        axes[0].legend(['Actual', 'Just Sensor', 'Predicted', 'Just Motion'])
+        axes[0].legend(['Actual', 'Predicted', 'Just Motion'])
 
         axes[1].plot(self.time, [measurement.variance for measurement in self.measurements])
 
