@@ -3,6 +3,13 @@ from matplotlib.pyplot import *
 from scipy.optimize import curve_fit
 import math
 
+class Sensor_t:
+    def __init__(self):
+        """Class for holding parameters relating to the sensors"""
+        self.parameters = 0
+        self.model_variance = 0
+
+
 def modelLinear(x, m, c):
     return m * x + c
 
@@ -263,3 +270,18 @@ def modelSonar(plot=False):
 # modelIR3(True)
 # modelIR4(True)
 # modelSonar(True)
+
+sonar = Sensor_t()
+ir3 = Sensor_t()
+ir4 = Sensor_t()
+
+# Sensor Model Estimation
+sonar.parameters, sonar.model_variance = modelSonar(True)
+print(sonar.parameters)
+print(sonar.model_variance)
+# ir3.parameters, ir3.model_variance = modelIR3()
+# ir4.parameters, ir4.model_variance = modelIR4()
+
+# # Inverse sonar model trial
+# sonar.mle = inverseLinear(data.sonar1[index], sonar.parameters[0], sonar.parameters[1])
+# sonarArray.append(sonar.mle) # TESTING
