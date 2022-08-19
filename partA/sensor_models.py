@@ -10,13 +10,16 @@ class Sensor_t:
         self.model_variance = 0
 
 
-def modelLinear(x, m, c):
-    return m * x + c
+def modelLinear(x, a, b):
+    return a + b*x
 
 def modelParabola(x, a, b, c):
     return a + b * x + c * x * x
 
-def modelHyperbole(x, a, b, c):
+def inverseParabola(z, a, b, c):
+    return np.roots(c, b, a - z)
+
+def modelHyperbole(x, a, b):
     return a + b / x 
 
 def modelHyperbole_1(x, a, b, c):
@@ -42,6 +45,7 @@ def iterative_fitting(curve, final_deviation, x, z, z_error):
         deviation = np.std(z_error)
     
     return x, z
+
 
 def modelIR3(plot=False):
 
@@ -267,18 +271,18 @@ def modelSonar(plot=False):
     return params_1, var
 
 
-# modelIR3(True)
-# modelIR4(True)
+ir3 = modelIR3(True)
+# ir3 = modelIR4(True)
 # modelSonar(True)
 
-sonar = Sensor_t()
-ir3 = Sensor_t()
-ir4 = Sensor_t()
+# sonar = Sensor_t()
+# ir3 = Sensor_t()
+# ir4 = Sensor_t()
 
 # Sensor Model Estimation
-sonar.parameters, sonar.model_variance = modelSonar(True)
-print(sonar.parameters)
-print(sonar.model_variance)
+# sonar.parameters, sonar.model_variance = modelSonar(True)
+# print(ir3[0])
+# print(ir3[1])
 # ir3.parameters, ir3.model_variance = modelIR3()
 # ir4.parameters, ir4.model_variance = modelIR4()
 

@@ -4,6 +4,8 @@ import math
 
 ALPHA = 0.035
 
+CUNT = []
+
 class Measurement_t:
     def __init__(self, mle, variance):
         self.mle = mle
@@ -15,20 +17,73 @@ class MotionModel_t:
 
 class SonarModel_t:
     def __init__(self):
-        self.parameters = [0.99343, -0.017464]
+        self.parameters = [-0.017464, 0.99343]
         self.model_variance = 0.00053022
 
-    def calcDist(self, sensor_measurement):
-        estimate = (sensor_measurement - self.parameters[1])/self.parameters[0]
-        variance = self.model_variance/(self.parameters[0]**2)
+    def calcDist(self, sensor_measurement, previous_mle):
+        estimate = (sensor_measurement - self.parameters[0])/self.parameters[1]
+        if (abs(previous_mle-estimate) > 0.5):
+            variance = 1000
+        else:
+            variance = self.model_variance/(self.parameters[1]**2)
+        return Measurement_t(estimate, variance)
+
+class IR3Model_t:
+    def __init__(self):
+        self.parameters = [[0.1361338, 0.2852434], [0.28991766, 0.11192217]]
+        self.model_variance = [0.005683673621942591, 0.005847994008104537]
+
+    def calcDist(self, sensor_measurement, previous_mle):
+        mle_array = []
+        difference_array = []
+
+        mle_array.append(self.parameters[0][1]/(sensor_measurement-self.parameters[0][0]))
+        mle_array.append((sensor_measurement - self.parameters[1][0])/self.parameters[1][1])
+
+        difference_array.append(abs(previous_mle- mle_array[0]))
+        difference_array.append(abs(previous_mle- mle_array[1]))
+
+        mle_index = difference_array.index(min(difference_array))
+        estimate = mle_array[mle_index]
+        variance = 0
+        return Measurement_t(estimate, variance)
+
+
+
+    # def inverse_piecewise(sensor, inverse_eqn_array, params_array, prev_X_blue):
+    #     MLE_array = []
+    #     diff_array = []
+
+    #     for i in range(0, len(inverse_eqn_array)):
+    #         try:
+    #             X_mle = inverse_eqn_array[i](z, params_array[i])
+    #             MLE_array.append(X_mle)
+    #             diff_array.append(abs(prev_X_blue - X_mle))
+    #         except Exception as E:
+    #             print("Could not invert piecewise equation {} for z = {}".format(i, z))
+    #     smallest_diff_index = diff_array.index(min(diff_array))
+    #     return MLE_array[smallest_diff_index], smallest_diff_index
+
+
+class IR4Model_t:
+    def __init__(self):
+        self.parameters = [[2.1989776 , -5.93744738, 27.598602], [3.43724799, 0.02907117], [1.25294805, 1.4931097]]
+        self.model_variance = [0.003065322291272046, 0.006230583811321369, 0.003980472133529135]
+
+    def calcDist(self, sensor_measurement, previous_mle):
+        estimate = 0
+        variance = 0
         return Measurement_t(estimate, variance)
 
 class SensorModels_t:
     def __init__(self):
         self.sonar1_model = SonarModel_t()
+        self.ir3_model = IR3Model_t()
+        self.ir4_model = IR4Model_t()
 
-    def fuse_sensors(self, sonar1_meas):
-        self.sonar1_model.calcDist(sonar1_meas)
+    def fuse_sensors(self, sonar1_meas, prior):
+        return self.sonar1_model.calcDist(sonar1_meas, prior) 
+
 
 class KalmanFilter_t:
     def __init__(self):
@@ -93,17 +148,21 @@ class Data_t:
         self.index, self.time, self.velocity_command, self.raw_ir1, self.raw_ir2, self.raw_ir3, self.raw_ir4, self.sonar1, self.sonar2 = np_data.T
 
     def run_data(self):
-        self.measurements.append(self.sensors_models.sonar1_model.calcDist(self.sonar1[0]))
+        self.measurements.append(self.sensors_models.sonar1_model.calcDist(self.sonar1[0], self.sonar1[0]))
 
         self.just_sensor.append(self.measurements[0])
         self.just_motion.append(self.measurements[0])
 
         for index in range(1, len(self.time)):
             self.priors.append(self.filter.update_prior(self.measurements[-1], self.velocity_command[index], self.time_step(index)))
-            self.measurements.append(self.filter.update_posterior(self.priors[-1], self.sensors_models.sonar1_model.calcDist(self.sonar1[index])))
-            
+            # self.measurements.append(self.filter.update_posterior(self.priors[-1], self.sensors_models.sonar1_model.calcDist(self.sonar1[index], self.priors[-1].mle)))
+            global CUNT
+            CUNT.append(self.sensors_models.ir3_model.calcDist(self.raw_ir3[index],self.priors[-1].mle).mle)
+            self.measurements.append(self.filter.update_posterior(self.priors[-1], self.sensors_models.fuse_sensors(self.sonar1[index], self.priors[-1].mle)))
+
             self.just_motion.append(self.filter.update_prior(self.just_motion[-1], self.velocity_command[index], self.time_step(index)))
-            self.just_sensor.append(self.sensors_models.sonar1_model.calcDist(self.sonar1[index]))
+            self.just_sensor.append(self.sensors_models.sonar1_model.calcDist(self.sonar1[index], self.priors[-1].mle))
+
 
     def plot_data(self):
         fig, axes = subplots(2)
@@ -124,7 +183,7 @@ class TrainingData_t(Data_t):
         self.index, self.time, self.distance, self.velocity_command, self.raw_ir1, self.raw_ir2, self.raw_ir3, self.raw_ir4, self.sonar1, self.sonar2 = np_data.T
 
     def plot_data(self):
-        fig, axes = subplots(3)
+        fig, axes = subplots(4)
         fig.suptitle('Kalman Filter')
 
         axes[0].plot(self.time, self.distance)
@@ -139,6 +198,9 @@ class TrainingData_t(Data_t):
         axes[2].set_title("Kalman Gain")
         axes[2].plot(self.time[1:], self.filter.kalman_gains)
 
+        axes[3].set_title("Kalman Gain")
+        axes[3].plot(self.time[1:], CUNT)
+
 
         show()
 
@@ -147,7 +209,7 @@ class TrainingData_t(Data_t):
 
 def main():
     # data = Data_t('test.csv')
-    data = TrainingData_t("training2.csv")
+    data = TrainingData_t("training1.csv")
     data.load_data()
     data.run_data()
     data.plot_data()
