@@ -11,7 +11,7 @@ class Measurement_t:
 
 class MotionModel_t:
     def __init__(self):
-        self.variance = 0.001178525902611975 * 5
+        self.velocity_variance = 0.001178525902611975
 
 class SonarModel_t:
     def __init__(self):
@@ -34,6 +34,7 @@ class KalmanFilter_t:
     def __init__(self):
         self.current_velocity = 0
         self.motion_model = MotionModel_t()
+        self.kalman_gains = []
 
     def update_prior(self, measurement: Measurement_t, velocity_command, time_step):
         if (abs(velocity_command) > abs(self.current_velocity)):
@@ -42,19 +43,22 @@ class KalmanFilter_t:
             self.current_velocity = velocity_command
 
         position_estimate = measurement.mle + self.current_velocity*time_step
-        position_variance = measurement.variance + self.motion_model.variance
+        position_variance = measurement.variance + self.motion_model.velocity_variance*time_step**2
         return Measurement_t(position_estimate, position_variance)
 
 
     def update_posterior(self, prior: Measurement_t, sensor_measurement: Measurement_t):
-        
-        if abs(sensor_measurement.mle - prior.mle) < math.sqrt(sensor_measurement.variance) + math.sqrt(prior.variance):
+        if abs(sensor_measurement.mle - prior.mle) < 4*math.sqrt(sensor_measurement.variance):
             kalman_gain = (1/sensor_measurement.variance)/(1/prior.variance + 1/sensor_measurement.variance)
             position_estimate = kalman_gain * sensor_measurement.mle + (1-kalman_gain) * prior.mle
             position_variance = 1/(1/prior.variance + 1/sensor_measurement.variance)
             posterior = Measurement_t(position_estimate, position_variance)
         else:
+            kalman_gain = 0
             posterior = prior
+
+        #Append kalman gains to list to plot    
+        self.kalman_gains.append(kalman_gain)
 
         return posterior
 
@@ -120,16 +124,21 @@ class TrainingData_t(Data_t):
         self.index, self.time, self.distance, self.velocity_command, self.raw_ir1, self.raw_ir2, self.raw_ir3, self.raw_ir4, self.sonar1, self.sonar2 = np_data.T
 
     def plot_data(self):
-        fig, axes = subplots(2)
+        fig, axes = subplots(3)
         fig.suptitle('Kalman Filter')
 
         axes[0].plot(self.time, self.distance)
         # axes[0].plot(self.time, [measurement.mle for measurement in self.just_sensor])
         axes[0].plot(self.time, [measurement.mle for measurement in self.measurements])
-        axes[0].plot(self.time, [measurement.mle for measurement in self.just_motion])
+        # axes[0].plot(self.time, [measurement.mle for measurement in self.just_motion])
         axes[0].legend(['Actual', 'Predicted', 'Just Motion'])
 
-        axes[1].plot(self.time, [measurement.variance for measurement in self.measurements])
+        axes[1].set_title("Error")
+        axes[1].plot(self.time, self.distance - [measurement.mle for measurement in self.measurements])
+
+        axes[2].set_title("Kalman Gain")
+        axes[2].plot(self.time[1:], self.filter.kalman_gains)
+
 
         show()
 

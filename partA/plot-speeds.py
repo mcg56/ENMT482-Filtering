@@ -51,7 +51,6 @@ distance_crude_model = [0]
 for index in range(1, len(data.velocity_command)):
     distance_modelled.append(distance_modelled[index-1] + velocity_modelled[index]*(data.time[index]-data.time[index-1]))
     distance_crude_model.append(distance_crude_model[index-1]+data.velocity_command[index]*(data.time[index]-data.time[index-1]))
-    print(data.time[index]-data.time[index-1])
 
 
 fig, axes = subplots(2)
@@ -72,7 +71,7 @@ axes[1].legend(["command", "actual", "modelled"])
 
 # axes[3].hist(velocity_error, bins=30)
 
-# print(np.var(velocity_error))
-# print(np.mean(velocity_error))
+print(np.var(velocity_error))
+print(np.mean(velocity_error))
 
 show()
