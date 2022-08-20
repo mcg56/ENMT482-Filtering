@@ -74,4 +74,5 @@ axes[1].legend(["command", "actual", "modelled"])
 print(np.var(velocity_error))
 print(np.mean(velocity_error))
 
+
 show()

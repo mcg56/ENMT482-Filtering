@@ -271,20 +271,23 @@ def modelSonar(plot=False):
     return params_1, var
 
 
-ir3 = modelIR3(True)
+# ir3 = modelIR3(True)
 # ir3 = modelIR4(True)
 # modelSonar(True)
 
-# sonar = Sensor_t()
-# ir3 = Sensor_t()
-# ir4 = Sensor_t()
+sonar = Sensor_t()
+ir3 = Sensor_t()
+ir4 = Sensor_t()
 
 # Sensor Model Estimation
 # sonar.parameters, sonar.model_variance = modelSonar(True)
+# print(sonar.model_variance)
 # print(ir3[0])
 # print(ir3[1])
 # ir3.parameters, ir3.model_variance = modelIR3()
+# print(ir3.model_variance[0])
 # ir4.parameters, ir4.model_variance = modelIR4()
+# print(ir4.model_variance[2])
 
 # # Inverse sonar model trial
 # sonar.mle = inverseLinear(data.sonar1[index], sonar.parameters[0], sonar.parameters[1])
