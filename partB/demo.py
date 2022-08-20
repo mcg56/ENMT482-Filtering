@@ -44,6 +44,7 @@ slam_poses = data[:, 3:6]
 # Position in odometry frame, from wheel encoders and gyro
 odom_poses = data[:, 6:9]
 
+
 # Id and measured position of beacon in camera frame
 beacon_ids = data[:, 9]
 beacon_poses = data[:, 10:13]
@@ -73,7 +74,7 @@ plt.ion()
 fig = plt.figure(figsize=(10, 5))
 axes = fig.add_subplot(111)
 fig.canvas.mpl_connect('key_press_event', keypress_handler)
-fig.canvas.manager.full_screen_toggle()
+# fig.canvas.manager.full_screen_toggle()
 
 plot_beacons(axes, beacon_locs, label='Beacons')
 plot_path(axes, slam_poses, '-', label='SLAM')

@@ -5,6 +5,7 @@ Department of Electrical and Computer Engineering
 University of Canterbury
 """
 
+from asyncio import wrap_future
 import numpy as np
 from numpy import cos, sin, tan, arccos, arcsin, arctan2, sqrt, exp
 from numpy.random import randn
@@ -44,11 +45,27 @@ def motion_model(particle_poses, speed_command, odom_pose, odom_pose_prev, dt):
     # code, the particles move in the -y direction with some Gaussian
     # additive noise in the x direction.  Hint, to start with do not
     # add much noise.
+    dx = odom_pose[0] - odom_pose_prev[0]
+    dy = odom_pose[1] - odom_pose_prev[1]
+    
+    phi1 = wraptopi(arctan2(dy, dx) - odom_pose_prev[2])
+    d = np.sqrt(dx**2 + dy**2)
+    phi2 = angle_difference(arctan2(dy, dx), odom_pose[2])
 
     for m in range(M):
-        particle_poses[m, 0] += randn(1) * 0.1
-        particle_poses[m, 1] -= 0.1
-    
+        # particle_poses[m, 0] += randn(1) * 0.1
+        # particle_poses[m, 1] -= 0.1
+
+        #initial turn
+        particle_poses[m, 2] = wraptopi(particle_poses[m, 2] + phi1)
+
+        #straight travel
+        particle_poses[m, 0] += d*cos(particle_poses[m, 2])
+        particle_poses[m, 1] += d*sin(particle_poses[m, 2])
+
+        #final turn
+        particle_poses[m, 2] = wraptopi(particle_poses[m, 2] + phi2)
+
     return particle_poses
 
 
