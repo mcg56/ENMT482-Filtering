@@ -80,7 +80,7 @@ fig.canvas.mpl_connect('key_press_event', keypress_handler)
 plot_beacons(axes, beacon_locs, label='Beacons')
 plot_path(axes, slam_poses, '-', label='SLAM')
 # Uncomment to show odometry when debugging
-#plot_path(axes, odom_poses, 'b:', label='Odom')
+# plot_path(axes, odom_poses, 'b:', label='Odom')
 
 axes.legend(loc='lower right')
 
@@ -96,7 +96,7 @@ axes.figure.canvas.flush_events()
 
 # TODO: Set this to avoid twirl at start
 # When your algorithm works well set to 0
-start_step = 50
+start_step = 0
 
 # TODO: Number of particles, you may need more or fewer!
 Nparticles = 200
@@ -173,24 +173,31 @@ for n in range(start_step + 1, Nposes):
 
         # print(state)
         
-    key = get_key()
-    if key == '.':
-        state = 'step'
-    elif key == ' ':
-        if state == 'run':
-            state = 'pause'
-        else:
-            state = 'run'
+    # key = get_key()
+    # if key == '.':
+    #     state = 'step'
+    # elif key == ' ':
+    #     if state == 'run':
+    #         state = 'pause'
+    #     else:
+    #         state = 'run'
 
-    if state == 'pause':
-        wait_until_key_pressed()
-    elif state == 'step':
-        wait_until_key_pressed()            
+    # if state == 'pause':
+    #     wait_until_key_pressed()
+    # elif state == 'step':
+    #     wait_until_key_pressed()            
 
 
 # Display final plot
 print('Done, displaying final plot')
 plt.ioff()
+plt.show()
+
+error = est_poses - slam_poses
+
+range_error = np.sqrt(error[..., 0]**2 + error[..., 1]**2)
+plt.plot(t, range_error)
+print(np.nanmean(range_error))
 plt.show()
 
 # Save final plot to file
