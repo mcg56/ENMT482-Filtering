@@ -111,7 +111,7 @@ def sensor_model(particle_poses, beacon_pose, beacon_loc):
     phi_std = 0.1 + abs(beacon_pose[2])*0.05
 
     #Experimenting with beacon angle variable
-    beacon_angle_std = 0.08 + abs(beacon_pose[2])*0.04
+    beacon_angle_std = 0.15 + abs(beacon_pose[2])*0.07
 
     # TODO.  For each particle calculate its weight based on its pose,
     # the relative beacon pose, and the beacon location.
@@ -127,6 +127,6 @@ def sensor_model(particle_poses, beacon_pose, beacon_loc):
         phi_likelihood = gaussian(angle_difference(phi, phi_particle), 0, phi_std)
         beacon_angle_likelihood = gaussian(angle_difference(beacon_loc[2], beacon_angle_particle), 0, beacon_angle_std)
 
-        particle_weights[m] = range_likelihood * phi_likelihood #* beacon_angle_likelihood
+        particle_weights[m] = range_likelihood * phi_likelihood * beacon_angle_likelihood
 
     return particle_weights
