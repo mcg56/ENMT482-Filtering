@@ -21,6 +21,7 @@ from utils import *
 from plot import *
 from transform import *
 import numpy as np
+import cv2
 
 
 seed(1)
@@ -98,7 +99,7 @@ axes.figure.canvas.flush_events()
 start_step = 50
 
 # TODO: Number of particles, you may need more or fewer!
-Nparticles = 100
+Nparticles = 200
 
 # TODO: How many steps between display updates
 display_steps = 10
@@ -127,7 +128,7 @@ est_poses = np.zeros((Nposes, 3))
 
 plot_particles(axes, poses, weights)
 axes.set_title('Push space to start/stop, dot to move one step, q to quit...')
-wait_until_key_pressed()
+# wait_until_key_pressed()
 
 state = 'run'
 display_step_prev = 0
@@ -143,7 +144,6 @@ for n in range(start_step + 1, Nposes):
         beacon_loc = beacon_locs[beacon_id]
         beacon_pose = beacon_poses[n]
 
-        # TODO: write sensor model function in models.py
         weights *= sensor_model(poses, beacon_pose, beacon_loc)
 
         if sum(weights) < 1e-50:
@@ -158,7 +158,7 @@ for n in range(start_step + 1, Nposes):
     est_poses[n] = poses.mean(axis=0)
 
     if (n > display_step_prev + display_steps) or state == 'step':
-        print(n)
+        # print(n)
 
         # Show particle cloud
         plot_particles(axes, poses, weights)
@@ -171,7 +171,7 @@ for n in range(start_step + 1, Nposes):
                                   '-', visibility=beacon_visible[display_step_prev-1 : n+1])
         display_step_prev = n
 
-        print(state)
+        # print(state)
         
     key = get_key()
     if key == '.':

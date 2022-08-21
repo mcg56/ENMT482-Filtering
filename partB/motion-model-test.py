@@ -15,6 +15,7 @@ from utils import wraptopi
 from numpy import pi, newaxis
 
 
+
 class Robot(object):
 
     def __init__(self, x=0, y=0, heading=pi / 2):
