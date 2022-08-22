@@ -19,7 +19,7 @@ def gauss(v, mu=0, sigma=1):
 ###############################################################################
 # Particle filter functions
 
-def resample(particles, weights):
+def resample(particles, weights, Nparticles):
     """Resample particles in proportion to their weights.
 
     Particles and weights should be arrays, and will be updated in place.
@@ -32,21 +32,24 @@ def resample(particles, weights):
 
     cum_weights /= cum_weights[-1]
 
-    new_particles = []
-    for _ in particles:
+    new_particles = np.zeros([Nparticles, 3])
+    for i in range(Nparticles):
         # Copy a particle into the list of new particles, choosing based
         # on weight
         m = bisect.bisect_left(cum_weights, uniform(0, 1))
         p = particles[m]
-        new_particles.append(p)
+        new_particles[i] = p
+
+    new_weights = np.ones(len(new_particles))
 
     # Replace old particles with new particles
-    for m, p in enumerate(new_particles):
-        particles[m] = p
+    # for m, p in enumerate(new_particles):
+    #     particles[m] = p
+     
 
     # Reset weights
-    weights[:] = 1
-    return True
+    # weights[:] = 1
+    return new_particles, new_weights
 
 
 def is_degenerate(weights):

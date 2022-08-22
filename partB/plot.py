@@ -63,9 +63,12 @@ def plot_particles(axes, poses, weights, colourmap='viridis'):
 
     if hasattr(axes, 'particles'):
         for m in range(len(x)):
-            axes.particles[m].set_data(x[m], y[m])
-            axes.particles[m].set_marker((3, 0, theta[m] + 180))
-            axes.particles[m].set_color(colours[m])
+            try:
+                axes.particles[m].set_data(x[m], y[m])
+                axes.particles[m].set_marker((3, 0, theta[m] + 180))
+                axes.particles[m].set_color(colours[m])
+            except IndexError:
+                print(len(y), len(x))
 
         axes.figure.canvas.draw()
         axes.figure.canvas.flush_events()

@@ -99,7 +99,7 @@ axes.figure.canvas.flush_events()
 start_step = 0
 
 # TODO: Number of particles, you may need more or fewer!
-Nparticles = 47
+Nparticles = 2000
 
 # TODO: How many steps between display updates
 display_steps = 10
@@ -156,16 +156,26 @@ for n in range(start_step + 1, Nposes):
         weight_likelihoods = sensor_model(poses, beacon_pose, beacon_loc)
 
         weights *= weight_likelihoods
+        
+
 
         if sum(weights) < 1e-50:
-            print('All weights are close to zero, you are lost...')
-            # TODO: Do something to recover
-            break
+            #Robot is lost, so spread particles back out across entire area
+            weights = np.ones(Nparticles)
+            poses = np.zeros((Nparticles, 3))
+
+            for m in range(Nparticles):
+                poses[m] = (uniform(Xmin, Xmax),
+                            uniform(Ymin, Ymax),
+                            uniform(Tmin, Tmax))
+            
 
         # print(len(weights))
         if is_degenerate(weights):
             print('Resampling %d' % n)
-            resample(poses, weights)
+            num_of_particles = round(min(2000, 200/max(weight_likelihoods)))
+            # print(num_of_particles)     
+            poses, weights = resample(poses, weights, num_of_particles)
 
 
     est_poses[n] = poses.mean(axis=0)
