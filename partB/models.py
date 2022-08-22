@@ -107,11 +107,11 @@ def sensor_model(particle_poses, beacon_pose, beacon_loc):
     phi = arctan2(beacon_pose[1], beacon_pose[0])
 
     #Define the standard deviation for the measurements (function of viewing angle)
-    r_std = 0.1 + abs(beacon_pose[2])*0.03
-    phi_std = 0.1 + abs(beacon_pose[2])*0.03
+    r_std = 0.15 + (np.pi - abs(beacon_pose[2]))*0.03
+    phi_std = 0.15  + (np.pi - abs(beacon_pose[2]))*0.03
 
     #Experimenting with beacon angle variable
-    beacon_angle_std = 0.15 + abs(beacon_pose[2])*0.07
+    beacon_angle_std = 0.2 + (np.pi - abs(beacon_pose[2]))*0.07
 
     for m in range(M):
         #Get the particles pose from the list of poses
@@ -125,6 +125,7 @@ def sensor_model(particle_poses, beacon_pose, beacon_loc):
         #Determine the likihood of the given measurements for the particle 
         range_likelihood = gaussian(r - r_particle, 0, r_std)
         phi_likelihood = gaussian(angle_difference(phi, phi_particle), 0, phi_std)
+
         beacon_angle_likelihood = gaussian(angle_difference(beacon_loc[2], beacon_angle_particle), 0, beacon_angle_std)
 
         #Update the weight given the likelihoods

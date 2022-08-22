@@ -196,9 +196,9 @@ plt.show()
 error = est_poses - slam_poses
 
 range_error = np.sqrt(error[..., 0]**2 + error[..., 1]**2)
-plt.plot(t, range_error)
+# plt.plot(t, range_error)
 print(np.nanmean(range_error))
-plt.show()
+# plt.show()
 
 # Save final plot to file
 plot_filename = 'path.pdf'
