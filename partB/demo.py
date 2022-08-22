@@ -132,6 +132,7 @@ for m in range(Nparticles):
                 uniform(Tmin, Tmax))
 
 Nposes = odom_poses.shape[0]
+print(Nposes)
 est_poses = np.zeros((Nposes, 3))
 
 plot_particles(axes, poses, weights)
@@ -141,7 +142,12 @@ axes.set_title('Push space to start/stop, dot to move one step, q to quit...')
 
 state = 'run'
 display_step_prev = 0
-for n in range(start_step + 1, Nposes):
+
+robot_capture_index = 200
+robot_release_index = 400
+for n in list(range(start_step+1, robot_capture_index)) + list(range(robot_release_index, Nposes)):
+    
+# for n in range(start_step + 1, Nposes):
 
     # TODO: write motion model function in models.py
     poses = motion_model(poses, commands[n-1], odom_poses[n], odom_poses[n - 1],
