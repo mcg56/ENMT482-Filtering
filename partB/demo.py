@@ -99,7 +99,7 @@ axes.figure.canvas.flush_events()
 start_step = 0
 
 # TODO: Number of particles, you may need more or fewer!
-Nparticles = 200
+Nparticles = 47
 
 # TODO: How many steps between display updates
 display_steps = 10
@@ -107,13 +107,21 @@ display_steps = 10
 # TODO: Set initial belief.  This assumes a uniform distribution for the pose
 # around the known starting pose.  It simplifies the localisation to a
 # tracking problem.
-start_pose = slam_poses[start_step]
-Xmin = start_pose[0] - 0.1
-Xmax = start_pose[0] + 0.1
-Ymin = start_pose[1] - 0.1
-Ymax = start_pose[1] + 0.1
-Tmin = start_pose[2] - 0.1
-Tmax = start_pose[2] + 0.1
+# start_pose = slam_poses[start_step]
+# Xmin = start_pose[0] - 0.1
+# Xmax = start_pose[0] + 0.1
+# Ymin = start_pose[1] - 0.1
+# Ymax = start_pose[1] + 0.1
+# Tmin = start_pose[2] - 0.1
+# Tmax = start_pose[2] + 0.1
+
+Xmin = min(slam_poses[:, 0])
+Xmax = max(slam_poses[:, 0])
+Ymin = min(slam_poses[:, 1])
+Ymax = max(slam_poses[:, 1])
+
+Tmin = -np.pi
+Tmax = np.pi
 
 weights = np.ones(Nparticles)
 poses = np.zeros((Nparticles, 3))
@@ -130,6 +138,7 @@ plot_particles(axes, poses, weights)
 axes.set_title('Push space to start/stop, dot to move one step, q to quit...')
 # wait_until_key_pressed()
 
+
 state = 'run'
 display_step_prev = 0
 for n in range(start_step + 1, Nposes):
@@ -144,16 +153,20 @@ for n in range(start_step + 1, Nposes):
         beacon_loc = beacon_locs[beacon_id]
         beacon_pose = beacon_poses[n]
 
-        weights *= sensor_model(poses, beacon_pose, beacon_loc)
+        weight_likelihoods = sensor_model(poses, beacon_pose, beacon_loc)
+
+        weights *= weight_likelihoods
 
         if sum(weights) < 1e-50:
             print('All weights are close to zero, you are lost...')
             # TODO: Do something to recover
             break
 
+        # print(len(weights))
         if is_degenerate(weights):
             print('Resampling %d' % n)
             resample(poses, weights)
+
 
     est_poses[n] = poses.mean(axis=0)
 
