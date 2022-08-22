@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib.pyplot import subplots, show
 
-ALPHA = 0.08
+ALPHA = 0.065
 
 class Data_t:
     def __init__(self, filename):
@@ -35,7 +35,7 @@ data.load_data()
 
 velocity_estimate = (data.distance[1:] - data.distance[:-1])/(data.time[1:]-data.time[:-1])
 
-velocity_modelled = [0.1056]
+velocity_modelled = [0]
 for index in range(1, len(data.velocity_command)):
     if (abs(data.velocity_command[index]) > abs(velocity_modelled[index-1])):
         new_velocity = ALPHA * data.velocity_command[index] + (1 - ALPHA) * velocity_modelled[index-1]
@@ -45,7 +45,7 @@ for index in range(1, len(data.velocity_command)):
 
 velocity_error = velocity_modelled[1:] - velocity_estimate
 
-distance_modelled = [0]
+distance_modelled = [0.1056]
 distance_crude_model = [0]
 
 for index in range(1, len(data.velocity_command)):
