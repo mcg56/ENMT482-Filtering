@@ -1,5 +1,6 @@
 import numpy as np
 from matplotlib.pyplot import *
+from matplotlib.ticker import PercentFormatter
 from scipy.optimize import curve_fit
 import math
 
@@ -184,27 +185,40 @@ def modelIR4(plot=False):
     x_3_1,z_3_1 = iterative_fitting(modelHyperbole, final_deviation, x_3, z_3, z_error_3)
     params_3, cov = curve_fit(modelHyperbole, x_3_1, z_3_1)
     z_3_1fit = modelHyperbole(x_3_1, *params_3)
-    z_error_3_1 = z_3_1 - z_3_1fit
+    # z_error_3_1 = raw_ir4[BREAK_POINT_2:] - z_3_1fit
+    fitted_data = np.multiply(1/distance[BREAK_POINT_2:],1.4931097) + 1.25294805
+    print(fitted_data)
+    # z_error_3_1 = z_3_1 - z_3_1fit
+    z_error_3_1 = fitted_data - raw_ir4[BREAK_POINT_2:]
     var_3 = np.var(z_error_3_1)
 
 
 
     if (plot == True):
-        fig, axes = subplots(2)
-        fig.suptitle('Test Fit')
+        fig, axes = subplots(1,2, gridspec_kw={'width_ratios': [3, 1]})
+        # fig.suptitle('IR4 Fit')
 
         axes[0].plot(distance, raw_ir4, '.', alpha=0.2)
-        axes[0].set_title('IR4')
+        # axes[0].set_title('IR4 raw data')
+        axes[0].set_ylabel('z(x)')
+        axes[0].set_xlabel('x [m]')
+        axes[0].grid()
+        # axes[0].plot(x_1_1, z_1_1fit, '.', alpha=0.2, linestyle='-')
 
-        axes[0].plot(x_1_1, z_1_1fit, '.', alpha=0.2, linestyle='-')
 
-
-        axes[0].plot(x_2_1, z_2_1fit, '.', alpha=0.2)
+        # axes[0].plot(x_2_1, z_2_1fit, '.', alpha=0.2)
         axes[0].plot(x_3_1, z_3_1fit, '.', alpha=0.2)
 
 
-        axes[1].plot(distance, zerror, '.', alpha=0.2)
-        axes[1].set_title('Fit')
+        # axes[1].plot(distance, raw_ir4, '.', alpha=0.2)
+        axes[1].hist(z_error_3_1, bins= 30, weights=np.ones(len(z_error_3_1))/len(z_error_3_1))
+        # axes[1].set_title('IR4 raw data')
+        axes[1].set_ylabel('Probabiltiy desnity')
+        axes[1].set_xlabel('Error [m]')
+        axes[1].grid()
+        gca().yaxis.set_major_formatter(PercentFormatter(1))
+        # axes[1].plot(distance, zerror, '.', alpha=0.2)
+        # axes[1].set_title('Fit')
         show()
 
     result = [params_1, params_2, params_3], [var_1, var_2, var_3]
@@ -272,7 +286,7 @@ def modelSonar(plot=False):
 
 
 # ir3 = modelIR3(True)
-# ir3 = modelIR4(True)
+ir3 = modelIR4(True)
 # modelSonar(True)
 
 sonar = Sensor_t()

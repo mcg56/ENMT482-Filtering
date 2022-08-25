@@ -151,9 +151,11 @@ class Data_t:
         fig.suptitle('Motion Model')
 
         axes[0].plot(self.time, self.sonar2)
+        axes[0].plot(self.time, self.sonar1)
         axes[0].plot(self.time, [measurement.mle for measurement in self.measurements])
         
         axes[0].legend(['Sonar2', 'Predicted'])
+        
         
 
         show()
@@ -173,7 +175,7 @@ class TrainingData_t(Data_t):
         self.sensor_models = [self.sonar1_model, self.ir3_model, self.ir4_model]
 
     def plot_data(self):
-        fig, axes = subplots(3)
+        fig, axes = subplots(2)
         fig.suptitle('Kalman Filter')
 
         axes[0].plot(self.time, self.distance)

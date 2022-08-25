@@ -106,12 +106,12 @@ def sensor_model(particle_poses, beacon_pose, beacon_loc):
     r = np.sqrt(beacon_pose[0]**2 + beacon_pose[1]**2)
     phi = arctan2(beacon_pose[1], beacon_pose[0])
 
-    #Define the standard deviation for the measurements (function of viewing angle)
-    r_std = 0.15 + (np.pi - abs(beacon_pose[2]))*0.03
-    phi_std = 0.15  + (np.pi - abs(beacon_pose[2]))*0.03
+    #Define the standard deviation for the measurements (function of viewing angle) TODO... Same process for phi and beacon_angle
+    r_std = 0.06 + 0.03*(np.pi/2 + beacon_pose[2])**2
+    phi_std = 0.1  + 0.1*(np.pi/2 + beacon_pose[2])**2
 
-    #Experimenting with beacon angle variable
-    beacon_angle_std = 0.2 + (np.pi - abs(beacon_pose[2]))*0.07
+    #Experimenting with beacon angle variable wrt to particle
+    beacon_angle_std = 0.15 + 0.1*(np.pi/2 + beacon_pose[2])**2
 
     for m in range(M):
         #Get the particles pose from the list of poses
