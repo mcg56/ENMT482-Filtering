@@ -3,6 +3,11 @@
 M.P. Hayes and M.J. Edwards,
 Department of Electrical and Computer Engineering
 University of Canterbury
+
+Edits by Sam Bain/Mark Gardyne:
+    Line 18: Addition of gauss function to be used for selected random points from a distribution
+    Line 27: Additional input parameter to resample function indicating the desired number of particles, 
+             as this is now adaptive.
 """
 
 import numpy as np
@@ -11,7 +16,7 @@ from numpy.random import uniform
 
 
 def gauss(v, mu=0, sigma=1):
-    """Evaluate a Gaussian PDF."""
+    """Finds the probability of a certain value, v is a gaussian PDF with a mean, mu and standard deviation, sigma."""
     
     return np.exp(-0.5 * ((v - mu) / sigma)**2) / (np.sqrt(2 * np.pi) * sigma)
 
@@ -22,7 +27,10 @@ def gauss(v, mu=0, sigma=1):
 def resample(particles, weights, Nparticles):
     """Resample particles in proportion to their weights.
 
-    Particles and weights should be arrays, and will be updated in place.
+    Particles and weights should be arrays. The number of particles is also specified, which
+    dictates the size of the resampled array.
+
+    Returns the new arrays of particle poses and weights.
     """
     cum_weights = np.cumsum(weights)
 
@@ -32,7 +40,9 @@ def resample(particles, weights, Nparticles):
 
     cum_weights /= cum_weights[-1]
 
+    #Initial empty array containing with a size of the number of new particles
     new_particles = np.zeros([Nparticles, 3])
+
     for i in range(Nparticles):
         # Copy a particle into the list of new particles, choosing based
         # on weight
@@ -42,13 +52,6 @@ def resample(particles, weights, Nparticles):
 
     new_weights = np.ones(len(new_particles))
 
-    # Replace old particles with new particles
-    # for m, p in enumerate(new_particles):
-    #     particles[m] = p
-     
-
-    # Reset weights
-    # weights[:] = 1
     return new_particles, new_weights
 
 

@@ -3,6 +3,10 @@
 M.P. Hayes and M.J. Edwards,
 Department of Electrical and Computer Engineering
 University of Canterbury
+
+Edits by Sam Bain/Mark Gardyne:
+    Line 55: Motion model implementation
+    Line 116: Sensor model implementation
 """
 
 from asyncio import wrap_future

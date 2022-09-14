@@ -7,6 +7,12 @@ University of Canterbury
 Note, this example is written in an attempt to be straightforward
 to follow for those new to Python.  Normally, we would have written
 it using about a dozen classes.
+
+Edits by Sam Bain/Mark Gardyne:
+    Line 105: Changed initial number of particles
+    Line 109: Made robots initial position unknown
+    Line 173: When robot is lost, spread poses back out across map.
+    Line 181: Recalculating required number of particles based on the correlation between particle poses and sensor measurements.
 """
 
 from __future__ import print_function, division
@@ -100,6 +106,7 @@ Nparticles = 2000
 
 display_steps = 10
 
+#Unknown initial position
 Xmin = min(slam_poses[:, 0])
 Xmax = max(slam_poses[:, 0])
 Ymin = min(slam_poses[:, 1])
@@ -165,7 +172,6 @@ for n in range(start_step + 1, Nposes):
         if sum(weights) < 1e-50:
             #Robot is lost, so spread particles back out across entire area
             weights = np.ones(Nparticles)
-            # poses = np.zeros((Nparticles, 3))
 
             poses = initial_rand_poses
             
