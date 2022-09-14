@@ -27,7 +27,7 @@ class SensorModel_t:
 
     def calcDist(self, index):
         if self.fit_type == 'linear':
-            estimate = (self.raw_data[index] - self.parameters[0])/self.parameters[1]
+            estimate = (self.raw_data[index] - self.parameters[0])/self.parameters[1] # Invert
             variance = self.model_variance/(self.parameters[1]**2)
         elif self.fit_type == 'hyperbole':
             estimate = self.parameters[0]/(self.raw_data[index]-self.parameters[1])
@@ -185,7 +185,9 @@ class TrainingData_t(Data_t):
 
         axes[1].set_title("Error")
         axes[1].plot(self.time, self.distance - [measurement.mle for measurement in self.measurements])
-
+            
+        # print(max(self.distance - [measurement.mle for measurement in self.measurements]))
+        print(np.mean(self.distance - [measurement.mle for measurement in self.measurements]))
         # axes[2].set_title("Kalman Gain")
         # axes[2].plot(self.time[1:], self.filter.kalman_gains)
 
@@ -196,10 +198,29 @@ class TrainingData_t(Data_t):
 
 def main():
     # data = Data_t('test.csv')
-    data = TrainingData_t("training2.csv")
-    data.load_data()
-    data.run_data()
-    data.plot_data()
+    data1 = TrainingData_t("training1.csv")
+    data1.load_data()
+    data1.run_data()
+    # data1.plot_data()
+
+    data2 = TrainingData_t("training2.csv")
+    data2.load_data()
+    data2.run_data()
+    # data2.plot_data()
+    fig, axes = subplots(1,2, figsize=(12,4))
+    axes[0].plot(data1.time, data1.distance)
+    axes[0].plot(data1.time, [measurement.mle for measurement in data1.measurements])
+    axes[0].legend(['Actual', 'Predicted', 'Just Motion'])
+    axes[0].set_ylabel('x [m]')
+    axes[0].set_xlabel('t [s]')
+
+    axes[1].plot(data2.time, data2.distance)
+    axes[1].plot(data2.time, [measurement.mle for measurement in data2.measurements])
+    axes[1].legend(['Actual', 'Predicted', 'Just Motion'])
+    axes[1].set_ylabel('x [m]')
+    axes[1].set_xlabel('t [s]')
+
+    show()
 
 if __name__ == "__main__":
     main()
