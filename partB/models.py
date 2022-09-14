@@ -11,6 +11,13 @@ from numpy import cos, sin, tan, arccos, arcsin, arctan2, sqrt, exp
 from numpy.random import randn
 from utils import gauss, wraptopi, angle_difference
 
+PHI1_STD = 0.005
+D_STD = 0.01
+PHI2_STD = 0.005
+
+R_STD_BASE = 0.06
+PHI_STD_BASE = 0.1
+THETA_STD_BASE = 0.15
 
 def motion_model(particle_poses, speed_command, odom_pose, odom_pose_prev, dt):
     """Apply motion model and return updated array of particle_poses.
@@ -40,25 +47,24 @@ def motion_model(particle_poses, speed_command, odom_pose, odom_pose_prev, dt):
 
     M = particle_poses.shape[0]
     
-    # TODO.  For each particle calculate its predicted pose plus some
-    # additive error to represent the process noise.  With this demo
-    # code, the particles move in the -y direction with some Gaussian
-    # additive noise in the x direction.  Hint, to start with do not
-    # add much noise.
+    #Find the distance travelled since the last measurement
     dx = odom_pose[0] - odom_pose_prev[0]
     dy = odom_pose[1] - odom_pose_prev[1]
     
+    #Convert dx and dy to find the most likely estimators for distance d, and angles phi1 and phi2
     phi1_mle = wraptopi(arctan2(dy, dx) - odom_pose_prev[2]) 
     d_mle = np.sqrt(dx**2 + dy**2)
     phi2_mle = angle_difference(arctan2(dy, dx), odom_pose[2])
 
-    for m in range(M):
-        # particle_poses[m, 0] += randn(1) * 0.1
-        # particle_poses[m, 1] -= 0.1
 
-        phi1 = phi1_mle + randn(1) * 0.005
-        d = d_mle + randn(1) * 0.01
-        phi2 = phi2_mle + randn(1) * 0.005
+
+    for m in range(M):
+
+        #Add a random value to the d, phi1 and phi2 values for each particle to approximate motion model error
+        #Standard deviations found using trial and error
+        phi1 = phi1_mle + randn(1) * PHI1_STD
+        d = d_mle + randn(1) * D_STD
+        phi2 = phi2_mle + randn(1) * PHI2_STD
 
         #initial turn
         particle_poses[m, 2] = wraptopi(particle_poses[m, 2] + phi1)
@@ -106,12 +112,12 @@ def sensor_model(particle_poses, beacon_pose, beacon_loc):
     r = np.sqrt(beacon_pose[0]**2 + beacon_pose[1]**2)
     phi = arctan2(beacon_pose[1], beacon_pose[0])
 
-    #Define the standard deviation for the measurements (function of viewing angle) TODO... Same process for phi and beacon_angle
-    r_std = 0.06 + 0.03*(np.pi/2 + beacon_pose[2])**2
-    phi_std = 0.1  + 0.1*(np.pi/2 + beacon_pose[2])**2
+    #Define the standard deviation for the measurements (function of viewing angle) 
+    r_std = R_STD_BASE #+ 0.03*(np.pi/2 + beacon_pose[2])**2
+    phi_std = PHI_STD_BASE  #+ 0.1*(np.pi/2 + beacon_pose[2])**2
 
     #Experimenting with beacon angle variable wrt to particle
-    beacon_angle_std = 0.15 + 0.1*(np.pi/2 + beacon_pose[2])**2
+    beacon_angle_std = THETA_STD_BASE #+ 0.1*(np.pi/2 + beacon_pose[2])**2
 
     for m in range(M):
         #Get the particles pose from the list of poses

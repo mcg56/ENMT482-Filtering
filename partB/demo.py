@@ -24,8 +24,8 @@ from matplotlib.ticker import PercentFormatter
 import numpy as np
 import time
 
-
-seed(2)
+#Change seed to experiment with different scenarios
+seed(7)
 
 # Load data
 
@@ -88,33 +88,17 @@ axes.legend(loc='lower right')
 axes.set_xlim([-6, None])
 axes.axis('equal')
 
-# Tweak axes to make plotting better
 axes.invert_yaxis()
 axes.set_xlabel('y')
 axes.set_ylabel('x')
 axes.figure.canvas.draw()
 axes.figure.canvas.flush_events()
 
-# TODO: Set this to avoid twirl at start
-# When your algorithm works well set to 0
 start_step = 0
 
-# TODO: Number of particles, you may need more or fewer!
 Nparticles = 2000
 
-# TODO: How many steps between display updates
 display_steps = 10
-
-# TODO: Set initial belief.  This assumes a uniform distribution for the pose
-# around the known starting pose.  It simplifies the localisation to a
-# tracking problem.
-# start_pose = slam_poses[start_step]
-# Xmin = start_pose[0] - 0.1
-# Xmax = start_pose[0] + 0.1
-# Ymin = start_pose[1] - 0.1
-# Ymax = start_pose[1] + 0.1
-# Tmin = start_pose[2] - 0.1
-# Tmax = start_pose[2] + 0.1
 
 Xmin = min(slam_poses[:, 0])
 Xmax = max(slam_poses[:, 0])
@@ -132,8 +116,7 @@ for m in range(Nparticles):
                 uniform(Ymin, Ymax),
                 uniform(Tmin, Tmax))
 
-# TESTING
-stored_rand_poses = poses
+initial_rand_poses = poses
 
 Nposes = odom_poses.shape[0]
 print(Nposes)
@@ -149,46 +132,44 @@ display_step_prev = 0
 
 robot_capture_index = 200
 robot_release_index = 400
-# for n in list(range(start_step+1, robot_capture_index)) + list(range(robot_release_index, Nposes)):
+
     
 error_array = np.array([])
+viewing_angle_array = np.array([])
+
+exec_time_array = np.array([])
+
+#Kidnapped robot
+# for n in list(range(start_step+1, robot_capture_index)) + list(range(robot_release_index, Nposes)):
+
 
 for n in range(start_step + 1, Nposes):
 
-    # TODO: write motion model function in models.py
     poses = motion_model(poses, commands[n-1], odom_poses[n], odom_poses[n - 1],
                          t[n] - t[n - 1])
+
     
-    if beacon_visible[n]:
+    
+    #Beacon 4 provided some inaccurate readings, so was removed
+    if beacon_visible[n] and beacon_ids[n] != 4:
+
 
         beacon_id = beacon_ids[n]
         beacon_loc = beacon_locs[beacon_id]
         beacon_pose = beacon_poses[n]
 
-        robot_pose = poses.mean(axis=0)
-
         weight_likelihoods = sensor_model(poses, beacon_pose, beacon_loc)
 
         weights *= weight_likelihoods
-
-        if (abs(beacon_pose[2] + np.pi/2) < 1*np.pi/8) and n > 20:
-            actual_distance = np.sqrt((beacon_loc[0] - robot_pose[0])**2 + (beacon_loc[1] - robot_pose[1])**2)
-            meas_distance = np.sqrt((beacon_pose[0])**2 + (beacon_pose[1])**2)
-            error_array = np.append(error_array, actual_distance - meas_distance)
 
         if sum(weights) < 1e-50:
             #Robot is lost, so spread particles back out across entire area
             weights = np.ones(Nparticles)
             # poses = np.zeros((Nparticles, 3))
 
-            poses = stored_rand_poses
-            # for m in range(Nparticles):
-            #     poses[m] = (uniform(Xmin, Xmax),
-            #                 uniform(Ymin, Ymax),
-            #                 uniform(Tmin, Tmax))
+            poses = initial_rand_poses
             
 
-        # print(len(weights))
         if is_degenerate(weights):
             # print('Resampling %d' % n)
             num_of_particles = round(min(2000, 200/max(weight_likelihoods)))
@@ -197,19 +178,19 @@ for n in range(start_step + 1, Nposes):
 
     est_poses[n] = poses.mean(axis=0)
 
-    # if (n > display_step_prev + display_steps) or state == 'step':
-    #     # print(n)
+    if (n > display_step_prev + display_steps) or state == 'step':
+        # print(n)
 
-    #     # Show particle cloud
-    #     plot_particles(axes, poses, weights)
+        # Show particle cloud
+        plot_particles(axes, poses, weights)
 
-    #     # Leave breadcrumbs showing current odometry
-    #     # plot_path(axes, odom_poses[n], 'k.')
+        # Leave breadcrumbs showing current odometry
+        # plot_path(axes, odom_poses[n], 'k.')
 
-    #     # Show mean estimate
-    #     plot_path_with_visibility(axes, est_poses[display_step_prev-1 : n+1],
-    #                               '-', visibility=beacon_visible[display_step_prev-1 : n+1])
-    #     display_step_prev = n
+        # Show mean estimate
+        plot_path_with_visibility(axes, est_poses[display_step_prev-1 : n+1],
+                                  '-', visibility=beacon_visible[display_step_prev-1 : n+1])
+        display_step_prev = n
 
         # print(state)
         
@@ -229,44 +210,31 @@ for n in range(start_step + 1, Nposes):
 
 
 # # Display final plot
-# print('Done, displaying final plot')
+print('Done, displaying final plot')
 plt.ioff()
-# plt.show()
-
-error = est_poses - slam_poses
-
-range_error = np.sqrt(error[..., 0]**2 + error[..., 1]**2)
-print(np.nanmean(range_error))
-plt.figure(figsize=(10, 5))
-plt.hist(error_array, bins= 30, weights=np.ones(len(error_array))/len(error_array))
-plt.xlabel("Error")
-plt.gca().yaxis.set_major_formatter(PercentFormatter(1))
-plt.ylabel("Probabilty density")
-plt.grid()
 plt.show()
-print(np.nanmean(error_array), np.std(error_array))
 
-# # Save final plot to file
-# plot_filename = 'path.pdf'
-# print('Saving final plot to', plot_filename)
+# Save final plot to file
+plot_filename = 'path.pdf'
+print('Saving final plot to', plot_filename)
 
-# plot_path(axes, est_poses, 'r-', label='PF')
-# axes.legend(loc='lower right')
+plot_path(axes, est_poses, 'r-', label='PF')
+axes.legend(loc='lower right')
 
-# fig = plt.figure(figsize=(10, 5))
-# axes = fig.add_subplot(111)
+fig = plt.figure(figsize=(10, 5))
+axes = fig.add_subplot(111)
 
-# plot_beacons(axes, beacon_locs, label='Beacons')
-# plot_path(axes, slam_poses, 'b-', label='SLAM')
-# plot_path(axes, odom_poses, 'b:', label='Odom')
-# plot_path(axes, est_poses, 'r-', label='PF')
-# axes.legend(loc='lower right')
+plot_beacons(axes, beacon_locs, label='Beacons')
+plot_path(axes, slam_poses, 'b-', label='SLAM')
+plot_path(axes, odom_poses, 'b:', label='Odom')
+plot_path(axes, est_poses, 'r-', label='PF')
+axes.legend(loc='lower right')
 
-# axes.set_xlim([-6, None])
-# axes.axis('equal')
+axes.set_xlim([-6, None])
+axes.axis('equal')
 
-# # Tweak axes to make plotting better
-# axes.invert_yaxis()
-# axes.set_xlabel('y')
-# axes.set_ylabel('x')
-# fig.savefig(plot_filename, bbox_inches='tight')
+# Tweak axes to make plotting better
+axes.invert_yaxis()
+axes.set_xlabel('y')
+axes.set_ylabel('x')
+fig.savefig(plot_filename, bbox_inches='tight')
