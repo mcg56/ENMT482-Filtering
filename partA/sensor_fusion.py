@@ -1,3 +1,9 @@
+"""Module to run sensor fusion and Kalman Filter.
+
+S.W. Bain and M.C. Gardyne,
+15/08/2022
+"""
+
 import numpy as np
 from matplotlib.pyplot import *
 import math
@@ -28,7 +34,7 @@ class SensorModel_t:
     def calcDist(self, index):
         if self.fit_type == 'linear':
             estimate = (self.raw_data[index] - self.parameters[0])/self.parameters[1] # Invert
-            variance = self.model_variance/(self.parameters[1]**2)
+            variance = self.model_variance/(self.parameters[1]**2) # Derivative (linear aproximation)
         elif self.fit_type == 'hyperbole':
             estimate = self.parameters[0]/(self.raw_data[index]-self.parameters[1])
             variance = self.model_variance/(-self.parameters[1]/estimate**2)**2
@@ -99,7 +105,6 @@ class Data_t:
         self.sonar1 = []
         self.sonar2 = []
 
-
         self.sonar1_model = SensorModel_t([-0.017464, 0.99343], 0.00053022, [0, 5], 'linear')
         self.ir3_model = SensorModel_t([0.1361338, 0.2852434], 0.005684, [0.2, 0.7], 'hyperbole')
         self.ir4_model = SensorModel_t([1.25294805, 1.4931097], 0.003980, [1.5, 4], 'hyperbole')
@@ -153,11 +158,8 @@ class Data_t:
         axes[0].plot(self.time, self.sonar2)
         axes[0].plot(self.time, self.sonar1)
         axes[0].plot(self.time, [measurement.mle for measurement in self.measurements])
-        
         axes[0].legend(['Sonar2', 'Predicted'])
         
-        
-
         show()
 
 class TrainingData_t(Data_t):
@@ -193,20 +195,18 @@ class TrainingData_t(Data_t):
 
         show()
 
-
-
-
 def main():
     # data = Data_t('test.csv')
     data1 = TrainingData_t("training1.csv")
     data1.load_data()
     data1.run_data()
-    # data1.plot_data()
+    data1.plot_data()
 
     data2 = TrainingData_t("training2.csv")
     data2.load_data()
     data2.run_data()
-    # data2.plot_data()
+    data2.plot_data()
+
     fig, axes = subplots(1,2, figsize=(12,4))
     axes[0].plot(data1.time, data1.distance)
     axes[0].plot(data1.time, [measurement.mle for measurement in data1.measurements])

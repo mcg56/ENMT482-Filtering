@@ -1,8 +1,13 @@
+"""Module to find sensor models.
+
+S.W. Bain and M.C. Gardyne,
+15/08/2022
+"""
+
 import numpy as np
 from matplotlib.pyplot import *
 from matplotlib.ticker import PercentFormatter
 from scipy.optimize import curve_fit
-import math
 
 class Sensor_t:
     def __init__(self):
@@ -50,11 +55,7 @@ def iterative_fitting(curve, final_deviation, x, z, z_error):
 
 def modelIR3(plot=False):
 
-    # Wariables
     BREAK_POINT_1 = 1000
-    # initialTolerance = 2
-    # desiredTolerance = 0.1
-    # increment = 0.01
     final_deviation = 0.1
 
     # Load data
@@ -73,7 +74,6 @@ def modelIR3(plot=False):
     x_2 = distance[BREAK_POINT_1:]
     z_2 = raw_ir3[BREAK_POINT_1:]
 
-    # TODO make a module that returns all dis
     params, cov = curve_fit(modelHyperbole, x_1, z_1)
     z_1fit = modelHyperbole(x_1, *params)
     z_error_1 = z_1 - z_1fit
@@ -81,8 +81,7 @@ def modelIR3(plot=False):
     params, cov = curve_fit(modelLinear, x_2, z_2)
     z_2fit = modelLinear(x_2, *params)
     z_error_2 = z_2 - z_2fit
-    
-    # zerror = np.concatenate((z_error_1), axis=None)      
+          
     zerror = np.concatenate((z_error_1, z_error_2), axis=None)
 
     # Remove outliers and remodel
@@ -100,22 +99,15 @@ def modelIR3(plot=False):
     var_2 = np.var(z_error_2_1)
 
 
-
     if (plot == True):
         fig, axes = subplots(2)
-        fig.suptitle('Test Fit')
 
         axes[0].plot(distance, raw_ir3, '.', alpha=0.2)
-        axes[0].set_title('IR3')
-
         axes[0].plot(x_1, z_1fit, '.', alpha=0.2, linestyle='-')
-        axes[0].set_title('Fit')
-
         axes[0].plot(x_2, z_2fit, '.', alpha=0.2)
-        axes[0].set_title('Fit')
 
         axes[1].plot(distance, zerror, '.', alpha=0.2)
-        axes[1].set_title('Fit')
+
         show()
 
     result = [params_1, params_2], [var_1, var_2]
@@ -124,12 +116,8 @@ def modelIR3(plot=False):
 
 def modelIR4(plot=False):
     
-    # Wariables
     BREAK_POINT_1 = 362
     BREAK_POINT_2 = 655
-    # initialTolerance = 2
-    # desiredTolerance = 0.1
-    # increment = 0.01
     final_deviation = 0.1
 
     # Load data
@@ -152,7 +140,7 @@ def modelIR4(plot=False):
     x_3 = distance[BREAK_POINT_2:]
     z_3 = raw_ir4[BREAK_POINT_2:]
 
-    # TODO make a module that returns all dis
+
     params, cov = curve_fit(modelParabola, x_1, z_1)
     z_1fit = modelParabola(x_1, *params)
     z_error_1 = z_1 - z_1fit
@@ -185,10 +173,7 @@ def modelIR4(plot=False):
     x_3_1,z_3_1 = iterative_fitting(modelHyperbole, final_deviation, x_3, z_3, z_error_3)
     params_3, cov = curve_fit(modelHyperbole, x_3_1, z_3_1)
     z_3_1fit = modelHyperbole(x_3_1, *params_3)
-    # z_error_3_1 = raw_ir4[BREAK_POINT_2:] - z_3_1fit
     fitted_data = np.multiply(1/distance[BREAK_POINT_2:],1.4931097) + 1.25294805
-    print(fitted_data)
-    # z_error_3_1 = z_3_1 - z_3_1fit
     z_error_3_1 = fitted_data - raw_ir4[BREAK_POINT_2:]
     var_3 = np.var(z_error_3_1)
 
@@ -196,36 +181,26 @@ def modelIR4(plot=False):
 
     if (plot == True):
         fig, axes = subplots(1,2, gridspec_kw={'width_ratios': [3, 1]})
-        # fig.suptitle('IR4 Fit')
 
         axes[0].plot(distance, raw_ir4, '.', alpha=0.2)
-        # axes[0].set_title('IR4 raw data')
         axes[0].set_ylabel('z(x)')
         axes[0].set_xlabel('x [m]')
         axes[0].grid()
-        # axes[0].plot(x_1_1, z_1_1fit, '.', alpha=0.2, linestyle='-')
-
-
-        # axes[0].plot(x_2_1, z_2_1fit, '.', alpha=0.2)
         axes[0].plot(x_3_1, z_3_1fit, '.', alpha=0.2)
 
-
-        # axes[1].plot(distance, raw_ir4, '.', alpha=0.2)
         axes[1].hist(z_error_3_1, bins= 30, weights=np.ones(len(z_error_3_1))/len(z_error_3_1))
-        # axes[1].set_title('IR4 raw data')
         axes[1].set_ylabel('Probabiltiy desnity')
         axes[1].set_xlabel('Error [m]')
         axes[1].grid()
         gca().yaxis.set_major_formatter(PercentFormatter(1))
-        # axes[1].plot(distance, zerror, '.', alpha=0.2)
-        # axes[1].set_title('Fit')
+
         show()
 
     result = [params_1, params_2, params_3], [var_1, var_2, var_3]
     return result
     
 def modelSonar(plot=False):
-    # Wariables
+
     final_deviation = 0.1
 
     # Load data
@@ -240,14 +215,10 @@ def modelSonar(plot=False):
     x_1 = distance
     z_1 = sonar1
 
-    # TODO make a module that returns all dis
     params, cov = curve_fit(modelLinear, x_1, z_1)
     z_1fit = modelLinear(x_1, *params)
     z_error_1 = z_1 - z_1fit
     var_1 = np.var(z_error_1[:100])
-    # print(var_1) #TESTING
-
-
 
     # Remove outliers and remodel
     x_1_1,z_1_1 = iterative_fitting(modelLinear, final_deviation, x_1, z_1, z_error_1)
@@ -255,19 +226,7 @@ def modelSonar(plot=False):
     z_1_1fit = modelLinear(x_1_1, *params_1)
     z_error = z_1_1 - z_1_1fit
 
-    # # Find varience of new fit. Omit outliers
-    # var_lut = []
-    # bin_width = math.floor(len(x_1_1)/10)
-    # bin_step = x_1_1[-1]/10
-
-    # for bin in range(10):
-    #     LUT_range = (bin*bin_step, (bin+1)*bin_step)
-    #     var = np.var(z_error[bin*bin_width: (bin+1)*bin_width])
-    #     var_lut.append([LUT_range, var])
-    # print(var_lut)
-
     var = np.var(z_error)
-    # print(np.var(z_error))
 
     if (plot == True):
         fig, axes = subplots(2)
@@ -275,34 +234,17 @@ def modelSonar(plot=False):
 
         axes[0].plot(x_1, sonar1, '.', alpha=0.2)
         axes[0].set_title('Sonar 1')
-
         axes[0].plot(x_1_1, z_1_1fit, '.', alpha=0.2, linestyle='-')
         axes[0].plot(x_1, z_1fit, '.', alpha=0.2, linestyle='-')
 
         axes[1].plot(x_1_1, z_1_1, '.', alpha=0.2)
         axes[1].set_title('Fit')
+
         show()
     return params_1, var
 
 
-# ir3 = modelIR3(True)
-ir3 = modelIR4(True)
+# modelIR3(True)
+# modelIR4(True)
 # modelSonar(True)
 
-sonar = Sensor_t()
-ir3 = Sensor_t()
-ir4 = Sensor_t()
-
-# Sensor Model Estimation
-# sonar.parameters, sonar.model_variance = modelSonar(True)
-# print(sonar.model_variance)
-# print(ir3[0])
-# print(ir3[1])
-# ir3.parameters, ir3.model_variance = modelIR3()
-# print(ir3.model_variance[0])
-# ir4.parameters, ir4.model_variance = modelIR4()
-# print(ir4.model_variance[2])
-
-# # Inverse sonar model trial
-# sonar.mle = inverseLinear(data.sonar1[index], sonar.parameters[0], sonar.parameters[1])
-# sonarArray.append(sonar.mle) # TESTING
