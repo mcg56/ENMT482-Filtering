@@ -1,3 +1,9 @@
+"""Module to tune motion model.
+
+S.W. Bain and M.C. Gardyne,
+15/08/2022
+"""
+
 import numpy as np
 from matplotlib.pyplot import subplots, show
 
@@ -32,7 +38,6 @@ class TrainingData_t(Data_t):
 data = TrainingData_t('training2.csv')
 data.load_data()
 
-
 velocity_estimate = (data.distance[1:] - data.distance[:-1])/(data.time[1:]-data.time[:-1])
 
 velocity_modelled = [0]
@@ -53,7 +58,7 @@ for index in range(1, len(data.velocity_command)):
     distance_crude_model.append(distance_crude_model[index-1]+data.velocity_command[index]*(data.time[index]-data.time[index-1]))
 
 
-fig, axes = subplots(2)
+fig, axes = subplots(4)
 fig.suptitle('Motion Model')
 
 axes[0].set_title('Command vs estimate')
@@ -62,14 +67,14 @@ axes[0].plot(data.time[1:], velocity_estimate, '-')
 axes[0].plot(data.time, velocity_modelled)
 axes[0].legend(["command", "actual", "modelled"])
 
-# axes[1].plot(data.time, distance_crude_model)
 axes[1].plot(data.time, data.distance)
 axes[1].plot(data.time, distance_modelled)
 axes[1].legend(["command", "actual", "modelled"])
 
-# axes[2].plot(data.time[1:], velocity_error, '.')
+axes[2].plot(data.time[1:], velocity_error, '.')
 
-# axes[3].hist(velocity_error, bins=30)
+axes[3].hist(velocity_error, bins=30)
+axes[3].set_xlabel('t [s]')
 
 print(np.var(velocity_error))
 print(np.mean(velocity_error))
